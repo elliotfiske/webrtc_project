@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>SkylinkJS 0.6.12</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- font and icon -->
+    <link rel="shortcut icon" type="image/ico" href="../assets/favicon.ico">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700|Source+Sans+Pro" type="text/css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700|Source+Code+Pro" type="text/css">
+    <!-- styling -->
+    <link rel="stylesheet" href="../assets/vendor/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../assets/vendor/css/bootstrap-theme.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <!-- scripts -->
+    <script src="../assets/vendor/js/jquery.min.js"></script>
+    <script src="../assets/vendor/js/bootstrap.min.js"></script>
+    <script src="../assets/js/script.js"></script>
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body>
+
+<div id="doc">
+  <nav id="hd" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a href="" class="navbar-brand">
+          <img src="../assets/img/logo.svg" />JS<small>Version: 0.6.12</small>
+        </a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul id="api-list" class="nav navbar-nav navbar-right">
+  <li class="dropdown">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Getting Started Examples <span class="caret"></span></a>
+    <ul class="dropdown-menu" role="menu">
+      <li><a href="https://temasys.com.sg/getting-started-with-webrtc-and-skylinkjs/">Setting up a Video Call</a></li>
+      <li><a href="https://temasys.com.sg/screensharing-with-skylinkjs/">Setting up Screensharing</a></li>
+      <li><a href="https://temasys.com.sg/building-a-simple-peer-to-peer-webrtc-chat/">Setting up a Chatroom</a></li>
+    </ul>
+  </li>
+  
+    <li><a href="../classes/Skylink.html">Documentation</a></li>
+  
+  <!--<li class="dropdown">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Classes <span class="caret"></span></a>
+    <ul class="dropdown-menu" role="menu">
+      
+        <li><a href="../classes/Skylink.html">Skylink</a></li>
+      
+    </ul>
+  </li>-->
+  <li><a class="btn btn-info btn-navbar" href="http://developer.temasys.com.sg/">Developer Console</a></li>
+  <li><a class="btn btn-info btn-navbar" href="http://support.temasys.com.sg/">Support</a></li>
+  <!--<li class="dropdown">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Modules <span class="caret"></span></a>
+    <ul class="dropdown-menu" role="menu">
+      <li><a href="#api-modules">View all Modules</a></li>
+      
+    </ul>
+  </li>-->
+</ul>
+<!--<form id="api-tabview" class="navbar-form navbar-right" role="form">
+  <div id="api-tabview-filter" class="form-group">
+    <input type="search" id="api-filter" placeholder="Type to filter APIs">
+  </div>
+</form>-->
+      </div><!--/.navbar-collapse -->
+    </div>
+  </nav>
+  <div id="bd" class="yui3-g">
+
+      <div class="yui3-u-1-4">
+
+      </div>
+      <div class="yui3-u-3-4">
+          
+          <div class="apidocs">
+              <div id="docs-main">
+                  <div class="content content-main">
+                      <h1 class="file-heading">File: source/skylink-debug.js</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+/**
+ * These are the logging levels that Skylink provides.
+ * - This manipulates the debugging messages sent to &lt;code&gt;console&lt;/code&gt; object.
+ * - Refer to [Javascript Web Console](https://developer.mozilla.org/en/docs/Web/API/console).
+ * @attribute LOG_LEVEL
+ * @type JSON
+ * @param {Number} DEBUG &lt;small&gt;Value &lt;code&gt;4&lt;/code&gt; | Level higher than &lt;code&gt;LOG&lt;/code&gt;&lt;/small&gt;
+ *   Displays debugging logs from &lt;code&gt;LOG&lt;/code&gt; level onwards with &lt;code&gt;DEBUG&lt;/code&gt; logs.
+ * @param {Number} LOG &lt;small&gt;Value &lt;code&gt;3&lt;/code&gt; | Level higher than &lt;code&gt;INFO&lt;/code&gt;&lt;/small&gt;
+ *   Displays debugging logs from &lt;code&gt;INFO&lt;/code&gt; level onwards with &lt;code&gt;LOG&lt;/code&gt; logs.
+ * @param {Number} INFO &lt;small&gt;Value &lt;code&gt;2&lt;/code&gt; | Level higher than &lt;code&gt;WARN&lt;/code&gt;&lt;/small&gt;
+ *   Displays debugging logs from &lt;code&gt;WARN&lt;/code&gt; level onwards with &lt;code&gt;INFO&lt;/code&gt; logs.
+ * @param {Number} WARN &lt;small&gt;Value &lt;code&gt;1&lt;/code&gt; | Level higher than &lt;code&gt;ERROR&lt;/code&gt;&lt;/small&gt;
+ *   Displays debugging logs of &lt;code&gt;ERROR&lt;/code&gt; level with &lt;code&gt;WARN&lt;/code&gt; logs.
+ * @param {Number} ERROR &lt;small&gt;&lt;b&gt;DEFAULT&lt;/b&gt; | Value &lt;code&gt;0&lt;/code&gt; | Lowest level&lt;/small&gt;
+ *   Displays only &lt;code&gt;ERROR&lt;/code&gt; logs.
+ * @readOnly
+ * @component Log
+ * @for Skylink
+ * @since 0.5.4
+ */
+Skylink.prototype.LOG_LEVEL = {
+  DEBUG: 4,
+  LOG: 3,
+  INFO: 2,
+  WARN: 1,
+  ERROR: 0
+};
+
+/**
+ * The format string that is printed in every Skylink console logs for Skylink logs identification.&lt;br&gt;
+ * &lt;small&gt;Example: &lt;code&gt;&quot;SkylinkJS - &lt;&lt;logs here&gt;&gt;&quot;&lt;/code&gt;&lt;/small&gt;
+ * @attribute _LOG_KEY
+ * @type String
+ * @scoped true
+ * @readOnly
+ * @private
+ * @component Log
+ * @for Skylink
+ * @since 0.5.4
+ */
+var _LOG_KEY = &#x27;SkylinkJS&#x27;;
+
+
+/**
+ * Stores the list of Skylink console logging levels in an array.
+ * @attribute _LOG_LEVELS
+ * @type Array
+ * @required
+ * @scoped true
+ * @private
+ * @component Log
+ * @for Skylink
+ * @since 0.5.5
+ */
+var _LOG_LEVELS = [&#x27;error&#x27;, &#x27;warn&#x27;, &#x27;info&#x27;, &#x27;log&#x27;, &#x27;debug&#x27;];
+
+/**
+ * Stores the current Skylink log level.
+ * By default, the value is &lt;code&gt;ERROR&lt;/code&gt;.
+ * @attribute _logLevel
+ * @type String
+ * @default Skylink.LOG_LEVEL.ERROR
+ * @required
+ * @scoped true
+ * @private
+ * @component Log
+ * @for Skylink
+ * @since 0.5.4
+ */
+var _logLevel = 0;
+
+/**
+ * The flag that indicates if Skylink debugging mode is enabled.
+ * This is not to be confused with {{#crossLink &quot;Skylink/setLogLevel:method&quot;}}setLogLevel(){{/crossLink}}
+ *   functionality, as that touches the output Web console log levels, and this
+ *   enables the debugging trace of the logs &lt;code&gt;console.trace()&lt;/code&gt; or storage of the console logs.
+ * @attribute _enableDebugMode
+ * @type Boolean
+ * @default false
+ * @private
+ * @required
+ * @scoped true
+ * @component Log
+ * @for Skylink
+ * @since 0.5.4
+ */
+var _enableDebugMode = false;
+
+/**
+ * The flag that indicates if Skylink should store the logs in
+ *   {{#crossLink &quot;Skylink/_storedLogs:attribute&quot;}}_storedLogs{{/crossLink}}.
+ * @attribute _enableDebugStack
+ * @type Boolean
+ * @default false
+ * @private
+ * @required
+ * @scoped true
+ * @component Log
+ * @for Skylink
+ * @since 0.5.5
+ */
+var _enableDebugStack = false;
+
+/**
+ * The flag that indicates if Skylink console logs should all output as
+ *   &lt;code&gt;console.trace()&lt;/code&gt;.
+ * If &lt;code&gt;console.trace()&lt;/code&gt; is not supported, it will fallback and
+ *   output as &lt;code&gt;console.log()&lt;/code&gt;.
+ * @attribute _enableDebugTrace
+ * @type Boolean
+ * @default false
+ * @private
+ * @required
+ * @scoped true
+ * @component Log
+ * @for Skylink
+ * @since 0.5.5
+ */
+var _enableDebugTrace = false;
+
+/**
+ * Stores all Skylink console logs.
+ * @attribute _storedLogs
+ * @type Array
+ * @private
+ * @required
+ * @scoped true
+ * @component Log
+ * @for Skylink
+ * @since 0.5.5
+ */
+var _storedLogs = [];
+
+/**
+ * Gets the stored Skylink console logs from
+ *   {{#crossLink &quot;Skylink/_storedLogs:attribute&quot;}}_storedLogs{{/crossLink}}.
+ * @method _getStoredLogsFn
+ * @param {Number} [logLevel] The specific log level of Skylink console logs
+ *   that should be returned. If value is not provided, it will return all stored console logs.
+ *  [Rel: Skylink.LOG_LEVEL]
+ * @return {Array} The array of stored console logs based on the log level provided.
+ * @private
+ * @required
+ * @scoped true
+ * @component Log
+ * @for Skylink
+ * @since 0.5.5
+ */
+var _getStoredLogsFn = function (logLevel) {
+  if (typeof logLevel === &#x27;undefined&#x27;) {
+    return _storedLogs;
+  }
+  var returnLogs = [];
+  for (var i = 0; i &lt; _storedLogs.length; i++) {
+    if (_storedLogs[i][1] === _LOG_LEVELS[logLevel]) {
+      returnLogs.push(_storedLogs[i]);
+    }
+  }
+  return returnLogs;
+};
+
+/**
+ * Clears the stored Skylink console logs in
+ *   {{#crossLink &quot;Skylink/_storedLogs:attribute&quot;}}_storedLogs{{/crossLink}}.
+ * @method _clearAllStoredLogsFn
+ * @param {Number} [logLevel] The specific log level of Skylink console logs
+ *   that should be cleared. If value is not provided, it will clear all stored console logs.
+ *  [Rel: Skylink.LOG_LEVEL]
+ * @private
+ * @required
+ * @scoped true
+ * @component Log
+ * @for Skylink
+ * @since 0.5.5
+ */
+var _clearAllStoredLogsFn = function () {
+  _storedLogs = [];
+};
+
+/**
+ * Prints all the stored Skylink console logs into the Web console from
+ *   {{#crossLink &quot;Skylink/_storedLogs:attribute&quot;}}_storedLogs{{/crossLink}}.
+ * @method _printAllStoredLogsFn
+ * @private
+ * @required
+ * @scoped true
+ * @component Log
+ * @for Skylink
+ * @since 0.5.5
+ */
+var _printAllStoredLogsFn = function () {
+  for (var i = 0; i &lt; _storedLogs.length; i++) {
+    var timestamp = _storedLogs[i][0];
+    var log = (console[_storedLogs[i][1]] !== &#x27;undefined&#x27;) ?
+      _storedLogs[i][1] : &#x27;log&#x27;;
+    var message = _storedLogs[i][2];
+    var debugObject = _storedLogs[i][3];
+
+    if (typeof debugObject !== &#x27;undefined&#x27;) {
+      console[log](message, debugObject, timestamp);
+    } else {
+      console[log](message, timestamp);
+    }
+  }
+};
+
+/**
+ * The object that handles the stored Skylink console logs.
+ * - {{#crossLink &quot;Skylink/setDebugMode:method&quot;}}setDebugMode(){{/crossLink}} &lt;code&gt;storeLogs&lt;/code&gt; flag
+ *   must be set as &lt;code&gt;true&lt;/code&gt; to enable the storage of logs.
+ * @property SkylinkLogs
+ * @type JSON
+ * @required
+ * @global true
+ * @component Log
+ * @for Skylink
+ * @since 0.5.5
+ */
+window.SkylinkLogs = {
+  /**
+   * Gets the stored Skylink console logs.
+   * @property SkylinkLogs.getLogs
+   * @param {Number} [logLevel] The specific log level of Skylink console logs
+   *   that should be returned.&lt;br&gt;If value is not provided, it will return all stored console logs.
+   *  [Rel: Skylink.LOG_LEVEL]
+   * @return {Array} The array of stored console logs based on the log level provided.
+   * @example
+   *  // Example 1: Get logs of specific level
+   *  var debugLogs = SkylinkLogs.getLogs(SkylinkDemo.LOG_LEVEL.DEBUG);
+   *
+   *  // Example 2: Get all logs
+   *  var allLogs = SkylinkLogs.getLogs();
+   * @type Function
+   * @required
+   * @global true
+   * @component Log
+   * @for Skylink
+   * @since 0.5.5
+   */
+  getLogs: _getStoredLogsFn,
+
+  /**
+   * Clears the stored Skylink console logs.
+   * @property SkylinkLogs.clearAllLogs
+   * @param {Number} [logLevel] The specific log level of Skylink console logs
+   *   that should be cleared. If value is not provided, it will clear all stored console logs.
+   *  [Rel: Skylink.LOG_LEVEL]
+   * @type Function
+   * @example
+   *   SkylinkLogs.clearAllLogs(); // empties all logs
+   * @required
+   * @global true
+   * @component Log
+   * @for Skylink
+   * @since 0.5.5
+   */
+  clearAllLogs: _clearAllStoredLogsFn,
+
+  /**
+   * Prints all the stored Skylink console logs into the [Web console](https://developer.mozilla.org/en/docs/Web/API/console).
+   * @property SkylinkLogs.printAllLogs
+   * @type Function
+   * @example
+   *   SkylinkLogs.printAllLogs(); // check the console
+   * @required
+   * @global true
+   * @component Log
+   * @for Skylink
+   * @since 0.5.5
+   */
+  printAllLogs: _printAllStoredLogsFn
+};
+
+/**
+ * Handles the Skylink logs and stores the console log message in
+ *   {{#crossLink &quot;Skylink/_storedLogs:attribute&quot;}}_storedLogs{{/crossLink}}
+ *   if {{#crossLink &quot;Skylink/_enableDebugStack:attribute&quot;}}_enableDebugStack{{/crossLink}} is
+ *   set to &lt;code&gt;true&lt;/code&gt; and prints out the log to the Web console.
+ * @method _logFn
+ * @param {String} logLevel The console log message log level. [Rel: Skylink.LOG_LEVEL]
+ * @param {Array|String} message The console log message contents.
+ * @param {String} message.[0] The Peer ID the message is associated with.
+ * @param {String} message.1 The interface the message is associated with.
+ * @param {String|Array} message.2 Any additional message information that the message is
+ *    associated with.
+ * @param {String} message.3: The console log message message data.
+ * @param {Object|String} [debugObject] The console debugging message object to accompany
+ *    and display that associates with the console log message.
+ * @private
+ * @required
+ * @scoped true
+ * @component Log
+ * @for Skylink
+ * @since 0.5.5
+ */
+var _logFn = function(logLevel, message, debugObject) {
+  var outputLog = _LOG_KEY;
+
+  if (typeof message === &#x27;object&#x27;) {
+    outputLog += (message[0]) ? &#x27; [&#x27; + message[0] + &#x27;] -&#x27; : &#x27; -&#x27;;
+    outputLog += (message[1]) ? &#x27; &lt;&lt;&#x27; + message[1] + &#x27;&gt;&gt;&#x27; : &#x27;&#x27;;
+    if (message[2]) {
+      outputLog += &#x27; &#x27;;
+      if (typeof message[2] === &#x27;object&#x27;) {
+        for (var i = 0; i &lt; message[2].length; i++) {
+          outputLog += &#x27;(&#x27; + message[2][i] + &#x27;)&#x27;;
+        }
+      } else {
+        outputLog += &#x27;(&#x27; + message[2] + &#x27;)&#x27;;
+      }
+    }
+    outputLog += &#x27; &#x27; + message[3];
+  } else {
+    outputLog += &#x27; - &#x27; + message;
+  }
+
+  if (_enableDebugMode &amp;&amp; _enableDebugStack) {
+    // store the logs
+    var logItem = [(new Date()), _LOG_LEVELS[logLevel], outputLog];
+
+    if (typeof debugObject !== &#x27;undefined&#x27;) {
+      logItem.push(debugObject);
+    }
+    _storedLogs.push(logItem);
+  }
+
+  if (_logLevel &gt;= logLevel) {
+    // Fallback to log if failure
+    logLevel = (typeof console[_LOG_LEVELS[logLevel]] === &#x27;undefined&#x27;) ? 3 : logLevel;
+
+    if (_enableDebugMode &amp;&amp; _enableDebugTrace) {
+      var logConsole = (typeof console.trace === &#x27;undefined&#x27;) ? logLevel[3] : &#x27;trace&#x27;;
+      if (typeof debugObject !== &#x27;undefined&#x27;) {
+        console[_LOG_LEVELS[logLevel]](outputLog, debugObject);
+        // output if supported
+        if (typeof console.trace !== &#x27;undefined&#x27;) {
+          console.trace(&#x27;&#x27;);
+        }
+      } else {
+        console[_LOG_LEVELS[logLevel]](outputLog);
+        // output if supported
+        if (typeof console.trace !== &#x27;undefined&#x27;) {
+          console.trace(&#x27;&#x27;);
+        }
+      }
+    } else {
+      if (typeof debugObject !== &#x27;undefined&#x27;) {
+        console[_LOG_LEVELS[logLevel]](outputLog, debugObject);
+      } else {
+        console[_LOG_LEVELS[logLevel]](outputLog);
+      }
+    }
+  }
+};
+
+/**
+ * The object that handles the logging functionality in Skylink.
+ * @attribute log
+ * @type JSON
+ * @param {Function} debug See {{#crossLink &quot;Skylink/log.debug:property&quot;}}log.debug(){{/crossLink}}.
+ * @param {Function} log See {{#crossLink &quot;Skylink/log.log:property&quot;}}log.log(){{/crossLink}}.
+ * @param {Function} info See {{#crossLink &quot;Skylink/log.info:property&quot;}}log.info(){{/crossLink}}.
+ * @param {Function} warn See {{#crossLink &quot;Skylink/log.warn:property&quot;}}log.warn(){{/crossLink}}.
+ * @param {Function} error See {{#crossLink &quot;Skylink/log.error:property&quot;}}log.error(){{/crossLink}}.
+ * @private
+ * @required
+ * @scoped true
+ * @component Log
+ * @for Skylink
+ * @since 0.5.4
+ */
+var log = {
+  /**
+   * Handles the &lt;code&gt;console.debug&lt;/code&gt; console log message.
+   * @property log.debug
+   * @type Function
+   * @param {Array|String} message The console log message contents.
+   * @param {String} message.[0] The Peer ID the message is associated with.
+   * @param {String} message.1 The interface the message is associated with.
+   * @param {String|Array} message.2 Any additional message information that the message is
+   *    associated with.
+   * @param {String} message.3: The console log message message data.
+   * @param {Object|String} [debugObject] The console debugging message object to accompany
+   *    and display that associates with the console log message.
+   * @example
+   *   // Logging for message
+   *   log.debug(&quot;This is my message&quot;, object);
+   * @private
+   * @required
+   * @scoped true
+   * @component Log
+   * @for Skylink
+   * @since 0.5.4
+   */
+  debug: function (message, object) {
+    _logFn(4, message, object);
+  },
+
+  /**
+   * Handles the &lt;code&gt;console.log&lt;/code&gt; console log message.
+   * @property log.log
+   * @type Function
+   * @param {Array|String} message The console log message contents.
+   * @param {String} message.[0] The Peer ID the message is associated with.
+   * @param {String} message.1 The interface the message is associated with.
+   * @param {String|Array} message.2 Any additional message information that the message is
+   *    associated with.
+   * @param {String} message.3: The console log message message data.
+   * @param {Object|String} [debugObject] The console debugging message object to accompany
+   *    and display that associates with the console log message.
+   * @example
+   *   // Logging for message
+   *   log.log(&quot;This is my message&quot;, object);
+   * @private
+   * @required
+   * @scoped true
+   * @component Log
+   * @for Skylink
+   * @since 0.5.4
+   */
+  log: function (message, object) {
+    _logFn(3, message, object);
+  },
+
+  /**
+   * Handles the &lt;code&gt;console.info&lt;/code&gt; console log message.
+   * @property log.info
+   * @type Function
+   * @param {Array|String} message The console log message contents.
+   * @param {String} message.[0] The Peer ID the message is associated with.
+   * @param {String} message.1 The interface the message is associated with.
+   * @param {String|Array} message.2 Any additional message information that the message is
+   *    associated with.
+   * @param {String} message.3: The console log message message data.
+   * @param {Object|String} [debugObject] The console debugging message object to accompany
+   *    and display that associates with the console log message.
+   * @example
+   *   // Logging for message
+   *   log.debug(&quot;This is my message&quot;, object);
+   * @private
+   * @required
+   * @scoped true
+   * @component Log
+   * @for Skylink
+   * @since 0.5.4
+   */
+  info: function (message, object) {
+    _logFn(2, message, object);
+  },
+
+  /**
+   * Handles the &lt;code&gt;console.warn&lt;/code&gt; console log message.
+   * @property log.warn
+   * @type Function
+   * @param {Array|String} message The console log message contents.
+   * @param {String} message.[0] The Peer ID the message is associated with.
+   * @param {String} message.1 The interface the message is associated with.
+   * @param {String|Array} message.2 Any additional message information that the message is
+   *    associated with.
+   * @param {String} message.3: The console log message message data.
+   * @param {Object|String} [debugObject] The console debugging message object to accompany
+   *    and display that associates with the console log message.
+   * @example
+   *   // Logging for message
+   *   log.debug(&quot;Here&#x27;s a warning. Please do xxxxx to resolve this issue&quot;, object);
+   * @private
+   * @required
+   * @component Log
+   * @for Skylink
+   * @since 0.5.4
+   */
+  warn: function (message, object) {
+    _logFn(1, message, object);
+  },
+
+  /**
+   * Handles the &lt;code&gt;console.error&lt;/code&gt; console log message.
+   * @property log.error
+   * @type Function
+   * @param {Array|String} message The console log message contents.
+   * @param {String} message.[0] The Peer ID the message is associated with.
+   * @param {String} message.1 The interface the message is associated with.
+   * @param {String|Array} message.2 Any additional message information that the message is
+   *    associated with.
+   * @param {String} message.3: The console log message message data.
+   * @param {Object|String} [debugObject] The console debugging message object to accompany
+   *    and display that associates with the console log message.
+   * @example
+   *   // Logging for external information
+   *   log.error(&quot;There has been an error&quot;, object);
+   * @private
+   * @required
+   * @scoped true
+   * @component Log
+   * @for Skylink
+   * @since 0.5.4
+   */
+  error: function (message, object) {
+    _logFn(0, message, object);
+  }
+};
+
+/**
+ * Configures the Skylink console log level that would determine the
+ *   type of console logs that would be printed in the [Web console](https://developer.mozilla.org/en/docs/Web/API/console).
+ * @method setLogLevel
+ * @param {Number} [logLevel] The log level of console message logs to
+ *    be printed in the Web console. [Rel: Skylink.LOG_LEVEL]
+ * @example
+ *   //Display logs level: Error, warn, info, log and debug.
+ *   SkylinkDemo.setLogLevel(SkylinkDemo.LOG_LEVEL.DEBUG);
+ * @component Log
+ * @for Skylink
+ * @since 0.5.5
+ */
+Skylink.prototype.setLogLevel = function(logLevel) {
+  if(logLevel === undefined) {
+    logLevel = Skylink.LOG_LEVEL.WARN;
+  }
+  for (var level in this.LOG_LEVEL) {
+    if (this.LOG_LEVEL[level] === logLevel) {
+      _logLevel = logLevel;
+      log.log([null, &#x27;Log&#x27;, level, &#x27;Log level exists. Level is set&#x27;]);
+      return;
+    }
+  }
+  log.error([null, &#x27;Log&#x27;, level, &#x27;Log level does not exist. Level is not set&#x27;]);
+};
+
+/**
+ * Configures the Skylink debugging tools.
+ * @method setDebugMode
+ * @param {Boolean|JSON} [options=false] The debugging settings for Skylink.
+ *   If provided options is a &lt;var&gt;typeof&lt;/var&gt; &lt;code&gt;boolean&lt;/code&gt;,
+ *   &lt;code&gt;storeLogs&lt;/code&gt; and &lt;code&gt;trace&lt;/code&gt; will be set to &lt;code&gt;true&lt;/code&gt;.
+ * @param {Boolean} [options.trace=false] The flag that indicates if Skylink console
+ *   logs should all output as &lt;code&gt;console.trace()&lt;/code&gt;.
+ *   If &lt;code&gt;console.trace()&lt;/code&gt; is not supported, it will fallback and
+ *   output as &lt;code&gt;console.log()&lt;/code&gt;.
+ * @param {Boolean} [options.storeLogs=false] The flag that indicates if
+ *   Skylink should store the logs in
+ *   {{#crossLink &quot;Skylink/SkylinkLogs:property&quot;}}SkylinkLogs{{/crossLink}}.
+ * @example
+ *   // Example 1: just to enable
+ *   SkylinkDemo.setDebugMode(true);
+ *   // or
+ *   SkylinkDemo.setDebugMode();
+ *
+ *   // Example 2: just to disable
+ *   SkylinkDemo.setDebugMode(false);
+ *
+ *   // Example 3: disable storeLogs or trace feature individually
+ *   SkylinkDemo.setDebugMode({ trace: true });
+ * @component Log
+ * @for Skylink
+ * @since 0.5.2
+ */
+Skylink.prototype.setDebugMode = function(isDebugMode) {
+  if (typeof isDebugMode === &#x27;object&#x27;) {
+    if (Object.keys(isDebugMode).length &gt; 0) {
+      _enableDebugTrace = !!isDebugMode.trace;
+      _enableDebugStack = !!isDebugMode.storeLogs;
+    } else {
+      _enableDebugMode = false;
+      _enableDebugTrace = false;
+      _enableDebugStack = false;
+    }
+  }
+  if (isDebugMode === false) {
+    _enableDebugMode = false;
+    _enableDebugTrace = false;
+    _enableDebugStack = false;
+
+    return;
+  }
+  _enableDebugMode = true;
+  _enableDebugTrace = true;
+  _enableDebugStack = true;
+};
+    </pre>
+</div>
+
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>

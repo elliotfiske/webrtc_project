@@ -78,7 +78,7 @@ function createConnection() {
 
 function sendData() {
   var data = document.getElementById("dataChannelSend").value;
-  sendChannel.send(data);
+  sendChannel.send(data + "hi mom lol");
   trace('Sent data: ' + data);
 }
 

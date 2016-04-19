@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>SkylinkJS 0.6.12</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- font and icon -->
+    <link rel="shortcut icon" type="image/ico" href="../assets/favicon.ico">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700|Source+Sans+Pro" type="text/css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700|Source+Code+Pro" type="text/css">
+    <!-- styling -->
+    <link rel="stylesheet" href="../assets/vendor/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../assets/vendor/css/bootstrap-theme.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <!-- scripts -->
+    <script src="../assets/vendor/js/jquery.min.js"></script>
+    <script src="../assets/vendor/js/bootstrap.min.js"></script>
+    <script src="../assets/js/script.js"></script>
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body>
+
+<div id="doc">
+  <nav id="hd" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a href="" class="navbar-brand">
+          <img src="../assets/img/logo.svg" />JS<small>Version: 0.6.12</small>
+        </a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul id="api-list" class="nav navbar-nav navbar-right">
+  <li class="dropdown">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Getting Started Examples <span class="caret"></span></a>
+    <ul class="dropdown-menu" role="menu">
+      <li><a href="https://temasys.com.sg/getting-started-with-webrtc-and-skylinkjs/">Setting up a Video Call</a></li>
+      <li><a href="https://temasys.com.sg/screensharing-with-skylinkjs/">Setting up Screensharing</a></li>
+      <li><a href="https://temasys.com.sg/building-a-simple-peer-to-peer-webrtc-chat/">Setting up a Chatroom</a></li>
+    </ul>
+  </li>
+  
+    <li><a href="../classes/Skylink.html">Documentation</a></li>
+  
+  <!--<li class="dropdown">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Classes <span class="caret"></span></a>
+    <ul class="dropdown-menu" role="menu">
+      
+        <li><a href="../classes/Skylink.html">Skylink</a></li>
+      
+    </ul>
+  </li>-->
+  <li><a class="btn btn-info btn-navbar" href="http://developer.temasys.com.sg/">Developer Console</a></li>
+  <li><a class="btn btn-info btn-navbar" href="http://support.temasys.com.sg/">Support</a></li>
+  <!--<li class="dropdown">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Modules <span class="caret"></span></a>
+    <ul class="dropdown-menu" role="menu">
+      <li><a href="#api-modules">View all Modules</a></li>
+      
+    </ul>
+  </li>-->
+</ul>
+<!--<form id="api-tabview" class="navbar-form navbar-right" role="form">
+  <div id="api-tabview-filter" class="form-group">
+    <input type="search" id="api-filter" placeholder="Type to filter APIs">
+  </div>
+</form>-->
+      </div><!--/.navbar-collapse -->
+    </div>
+  </nav>
+  <div id="bd" class="yui3-g">
+
+      <div class="yui3-u-1-4">
+
+      </div>
+      <div class="yui3-u-3-4">
+          
+          <div class="apidocs">
+              <div id="docs-main">
+                  <div class="content content-main">
+                      <h1 class="file-heading">File: source/ice-connection.js</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+/**
+ * These are the list of Peer connection ICE connection states that Skylink would trigger.
+ * - These states references the [w3c WebRTC Specification Draft](http://www.w3.org/TR/webrtc/#idl-def-RTCIceConnectionState),
+ *   except the &lt;code&gt;TRICKLE_FAILED&lt;/code&gt; state, which is an addition provided state by Skylink
+ *   to inform that trickle ICE has failed.
+ * @attribute ICE_CONNECTION_STATE
+ * @type JSON
+ * @param {String} STARTING &lt;small&gt;Value &lt;code&gt;&quot;starting&quot;&lt;/code&gt;&lt;/small&gt;
+ *   The state when the ICE agent is gathering addresses and/or waiting
+ *   for remote candidates to be supplied.&lt;br&gt;
+ * This state occurs when Peer connection has just been initialised.
+ * @param {String} CHECKING &lt;small&gt;Value &lt;code&gt;&quot;checking&quot;&lt;/code&gt;&lt;/small&gt;
+ *   The state when the ICE agent has received remote candidates
+ *   on at least one component, and is checking candidate pairs but has
+ *   not yet found a connection. In addition to checking, it may also
+ *   still be gathering.&lt;br&gt;
+ * This state occurs after &lt;code&gt;STARTING&lt;/code&gt; state.
+ * @param {String} CONNECTED &lt;small&gt;Value &lt;code&gt;&quot;connected&quot;&lt;/code&gt;&lt;/small&gt;
+ *  The state when the ICE agent has found a usable connection
+ *   for all components but is still checking other candidate pairs to see
+ *   if there is a better connection. It may also still be gathering.&lt;br&gt;
+ * This state occurs after &lt;code&gt;CHECKING&lt;/code&gt;.
+ * @param {String} COMPLETED &lt;small&gt;Value &lt;code&gt;&quot;completed&quot;&lt;/code&gt;&lt;/small&gt;
+ *   The state when the ICE agent has finished gathering and
+ *   checking and found a connection for all components.&lt;br&gt;
+ * This state occurs after &lt;code&gt;CONNECTED&lt;/code&gt; (or sometimes after &lt;code&gt;CHECKING&lt;/code&gt;).
+ * @param {String} FAILED &lt;small&gt;Value &lt;code&gt;&quot;failed&quot;&lt;/code&gt;&lt;/small&gt;
+ *   The state when the ICE agent is finished checking all
+ *   candidate pairs and failed to find a connection for at least one
+ *   component.&lt;br&gt;
+ * This state occurs during the ICE connection attempt after &lt;code&gt;STARTING&lt;/code&gt; state.
+ * @param {String} DISCONNECTED &lt;small&gt;Value &lt;code&gt;&quot;disconnected&quot;&lt;/code&gt;&lt;/small&gt;
+ *   The state when liveness checks have failed for one or
+ *   more components. This is more aggressive than &quot;failed&quot;, and may
+ *   trigger intermittently (and resolve itself without action) on
+ *   a flaky network.&lt;br&gt;
+ * This state occurs after &lt;code&gt;CONNECTED&lt;/code&gt; or &lt;code&gt;COMPLETED&lt;/code&gt; state.
+ * @param {String} CLOSED &lt;small&gt;Value &lt;code&gt;&quot;closed&quot;&lt;/code&gt;&lt;/small&gt;
+ *   The state when the ICE agent has shut down and is no
+ *   longer responding to STUN requests.&lt;br&gt;
+ * This state occurs after Peer connection has been disconnected &lt;em&gt;(closed)&lt;/em&gt;.
+ * @param {String} TRICKLE_FAILED &lt;small&gt;Value &lt;code&gt;&quot;trickeFailed&quot;&lt;/code&gt;&lt;/small&gt;
+ *   The state when attempting to connect successfully with ICE connection fails
+ *    with trickle ICE connections.
+ * @readOnly
+ * @since 0.1.0
+ * @component ICE
+ * @for Skylink
+ */
+Skylink.prototype.ICE_CONNECTION_STATE = {
+  STARTING: &#x27;starting&#x27;,
+  CHECKING: &#x27;checking&#x27;,
+  CONNECTED: &#x27;connected&#x27;,
+  COMPLETED: &#x27;completed&#x27;,
+  CLOSED: &#x27;closed&#x27;,
+  FAILED: &#x27;failed&#x27;,
+  TRICKLE_FAILED: &#x27;trickleFailed&#x27;,
+  DISCONNECTED: &#x27;disconnected&#x27;
+};
+
+/**
+ * These are the list of available transports that
+ *   Skylink would use to connect to the TURN servers with.
+ * - For example as explanation how these options works below, let&#x27;s take that
+ *   these are list of TURN servers given by the platform signaling:&lt;br&gt;
+ *   &lt;small&gt;&lt;code&gt;turn:turnurl:123?transport=tcp&lt;/code&gt;&lt;br&gt;
+ *   &lt;code&gt;turn:turnurl?transport=udp&lt;/code&gt;&lt;br&gt;
+ *   &lt;code&gt;turn:turnurl:1234&lt;/code&gt;&lt;br&gt;
+ *   &lt;code&gt;turn:turnurl&lt;/code&gt;&lt;/small&gt;
+ * @attribute TURN_TRANSPORT
+ * @type JSON
+ * @param {String} TCP &lt;small&gt;Value &lt;code&gt;&quot;tcp&quot;&lt;/code&gt;&lt;/small&gt;
+ *   The option to connect using only TCP transports.
+ *   &lt;small&gt;EXAMPLE OUTPUT&lt;br&gt;
+ *   &lt;code&gt;turn:turnurl:123?transport=tcp&lt;/code&gt;&lt;br&gt;
+ *   &lt;code&gt;turn:turnurl?transport=tcp&lt;/code&gt;&lt;br&gt;
+ *   &lt;code&gt;turn:turnurl:1234?transport=tcp&lt;/code&gt;&lt;/small&gt;
+ * @param {String} UDP &lt;small&gt;Value &lt;code&gt;&quot;udp&quot;&lt;/code&gt;&lt;/small&gt;
+ *   The option to connect using only UDP transports.
+ *   &lt;small&gt;EXAMPLE OUTPUT&lt;br&gt;
+ *   &lt;code&gt;turn:turnurl:123?transport=udp&lt;/code&gt;&lt;br&gt;
+ *   &lt;code&gt;turn:turnurl?transport=udp&lt;/code&gt;&lt;br&gt;
+ *   &lt;code&gt;turn:turnurl:1234?transport=udp&lt;/code&gt;&lt;/small&gt;
+ * @param {String} ANY &lt;small&gt;&lt;b&gt;DEFAULT&lt;/b&gt; | Value &lt;code&gt;&quot;any&quot;&lt;/code&gt;&lt;/small&gt;
+ *   This option to use any transports that is preconfigured by provided by the platform signaling.
+ *   &lt;small&gt;EXAMPLE OUTPUT&lt;br&gt;
+ *   &lt;code&gt;turn:turnurl:123?transport=tcp&lt;/code&gt;&lt;br&gt;
+ *   &lt;code&gt;turn:turnurl?transport=udp&lt;/code&gt;&lt;br&gt;
+ *   &lt;code&gt;turn:turnurl:1234&lt;/code&gt;&lt;br&gt;
+ *   &lt;code&gt;turn:turnurl&lt;/code&gt;&lt;/small&gt;
+ * @param {String} NONE &lt;small&gt;Value &lt;code&gt;&quot;none&quot;&lt;/code&gt;&lt;/small&gt;
+ *   This option to set no transports.
+ *   &lt;small&gt;EXAMPLE OUTPUT&lt;br&gt;
+ *   &lt;code&gt;turn:turnurl:123&lt;/code&gt;&lt;br&gt;
+ *   &lt;code&gt;turn:turnurl&lt;/code&gt;&lt;br&gt;
+ *   &lt;code&gt;turn:turnurl:1234&lt;/code&gt;&lt;/small&gt;
+ * @param {String} ALL &lt;small&gt;Value &lt;code&gt;&quot;all&quot;&lt;/code&gt;&lt;/small&gt;
+ *   This option to use both TCP and UDP transports.
+ *   &lt;small&gt;EXAMPLE OUTPUT&lt;br&gt;
+ *   &lt;code&gt;turn:turnurl:123?transport=tcp&lt;/code&gt;&lt;br&gt;
+ *   &lt;code&gt;turn:turnurl:123?transport=udp&lt;/code&gt;&lt;br&gt;
+ *   &lt;code&gt;turn:turnurl?transport=tcp&lt;/code&gt;&lt;br&gt;
+ *   &lt;code&gt;turn:turnurl?transport=udp&lt;/code&gt;&lt;br&gt;
+ *   &lt;code&gt;turn:turnurl:1234?transport=tcp&lt;/code&gt;&lt;br&gt;
+ *   &lt;code&gt;turn:turnurl:1234?transport=udp&lt;/code&gt;&lt;/small&gt;
+ * @readOnly
+ * @since 0.5.4
+ * @component ICE
+ * @for Skylink
+ */
+Skylink.prototype.TURN_TRANSPORT = {
+  UDP: &#x27;udp&#x27;,
+  TCP: &#x27;tcp&#x27;,
+  ANY: &#x27;any&#x27;,
+  NONE: &#x27;none&#x27;,
+  ALL: &#x27;all&#x27;
+};
+
+/**
+ * The flag that indicates if PeerConnections should enable
+ *    trickling of ICE to connect the ICE connection.
+ * @attribute _enableIceTrickle
+ * @type Boolean
+ * @default true
+ * @private
+ * @required
+ * @since 0.3.0
+ * @component ICE
+ * @for Skylink
+ */
+Skylink.prototype._enableIceTrickle = true;
+
+/**
+ * The flag that indicates if PeerConnections ICE gathering
+ *   should use STUN server connection.
+ * @attribute _enableSTUN
+ * @type Boolean
+ * @default true
+ * @private
+ * @required
+ * @component ICE
+ * @since 0.5.4
+ */
+Skylink.prototype._enableSTUN = true;
+
+/**
+ * The flag that indicates if PeerConnections ICE gathering
+ *   should use TURN server connection.
+ * Tampering this flag may disable any successful Peer connection
+ *   that is behind any firewalls.
+ * @attribute _enableTURN
+ * @type Boolean
+ * @default true
+ * @private
+ * @required
+ * @component ICE
+ * @since 0.5.4
+ */
+Skylink.prototype._enableTURN = true;
+
+/**
+ * The flag to enable using of public STUN server connections.
+ * @attribute _usePublicSTUN
+ * @type Boolean
+ * @default true
+ * @required
+ * @private
+ * @component ICE
+ * @for Skylink
+ * @since 0.6.1
+ */
+Skylink.prototype._usePublicSTUN = true;
+
+/**
+ * Stores the TURN server transport to enable for TURN server connections.
+ * [Rel: Skylink.TURN_TRANSPORT]
+ * @attribute _TURNTransport
+ * @type String
+ * @default Skylink.TURN_TRANSPORT.ANY
+ * @private
+ * @required
+ * @since 0.5.4
+ * @component ICE
+ * @for Skylink
+ */
+Skylink.prototype._TURNTransport = &#x27;any&#x27;;
+
+/**
+ * Stores the list of Peer connection ICE connection failures.
+ * After an third attempt of ICE connection failure, the
+ *   trickling of ICE would be disabled.
+ * @attribute _ICEConnectionFailures
+ * @param {Number} (#peerId) The Peer ID associated with the
+ *   number of Peer connection ICE connection attempt failures.
+ * @type JSON
+ * @private
+ * @required
+ * @component Peer
+ * @for Skylink
+ * @since 0.5.8
+ */
+Skylink.prototype._ICEConnectionFailures = {};
+
+/**
+ * Reconfigures the &lt;code&gt;RTCConfiguration.iceServers&lt;/code&gt; that is
+ *   to be passed in constructing the new &lt;code&gt;RTCPeerConnection&lt;/code&gt;
+ *   object to remove (disable) STUN or remove TURN (disable) server
+ *   connections based on the
+ *   {{#crossLink &quot;Skylink/init:method&quot;}}init(){{/crossLink}}
+ *   configuration passed in.
+ * @method _setIceServers
+ * @param {JSON} config The RTCConfiguration that is to be passed for
+ *   constructing the new RTCPeerConnection object.
+ * @return {JSON} The updated RTCConfiguration object based on the
+ *   configuration settings in the
+ *   {{#crossLink &quot;Skylink/init:method&quot;}}init(){{/crossLink}}
+ *   method.
+ * @private
+ * @since 0.5.4
+ * @component ICE
+ * @for Skylink
+ */
+Skylink.prototype._setIceServers = function(givenConfig) {
+  var givenIceServers = clone(givenConfig.iceServers);
+  var iceServersList = {};
+  var newIceServers = [];
+  // TURN SSL config
+  var useTURNSSLProtocol = false;
+  var useTURNSSLPort = false;
+
+
+
+  if (window.location.protocol === &#x27;https:&#x27; || this._forceTURNSSL) {
+    if (window.webrtcDetectedBrowser === &#x27;chrome&#x27; ||
+      window.webrtcDetectedBrowser === &#x27;safari&#x27; ||
+      window.webrtcDetectedBrowser === &#x27;IE&#x27;) {
+      useTURNSSLProtocol = true;
+      useTURNSSLPort = false;
+    } else {
+      useTURNSSLPort = true;
+    }
+  }
+
+  log.log(&#x27;TURN server connections SSL configuration&#x27;, {
+    useTURNSSLProtocol: useTURNSSLProtocol,
+    useTURNSSLPort: useTURNSSLPort
+  });
+
+  var pushIceServer = function (username, credential, url, index) {
+    if (!iceServersList[username]) {
+      iceServersList[username] = {};
+    }
+
+    if (!iceServersList[username][credential]) {
+      iceServersList[username][credential] = [];
+    }
+
+    if (iceServersList[username][credential].indexOf(url) === -1) {
+      if (typeof index === &#x27;number&#x27;) {
+        iceServersList[username][credential].splice(index, 0, url);
+      } else {
+        iceServersList[username][credential].push(url);
+      }
+    }
+  };
+
+  var i, serverItem;
+
+  for (i = 0; i &lt; givenIceServers.length; i++) {
+    var server = givenIceServers[i];
+
+    if (typeof server.url !== &#x27;string&#x27;) {
+      log.warn(&#x27;Ignoring ICE server provided at index &#x27; + i, clone(server));
+      continue;
+    }
+
+    if (server.url.indexOf(&#x27;stun&#x27;) === 0) {
+      if (!this._enableSTUN) {
+        log.warn(&#x27;Ignoring STUN server provided at index &#x27; + i, clone(server));
+        continue;
+      }
+
+      if (!this._usePublicSTUN &amp;&amp; server.url.indexOf(&#x27;temasys&#x27;) === -1) {
+        log.warn(&#x27;Ignoring public STUN server provided at index &#x27; + i, clone(server));
+        continue;
+      }
+
+    } else if (server.url.indexOf(&#x27;turn&#x27;) === 0) {
+      if (!this._enableTURN) {
+        log.warn(&#x27;Ignoring TURN server provided at index &#x27; + i, clone(server));
+        continue;
+      }
+
+      if (server.url.indexOf(&#x27;:443&#x27;) === -1 &amp;&amp; useTURNSSLPort) {
+        log.log(&#x27;Ignoring TURN Server (non-SSL port) provided at index &#x27; + i, clone(server));
+        continue;
+      }
+
+      if (useTURNSSLProtocol) {
+        var parts = server.url.split(&#x27;:&#x27;);
+        parts[0] = &#x27;turns&#x27;;
+        server.url = parts.join(&#x27;:&#x27;);
+      }
+    }
+
+    // parse &quot;@&quot; settings
+    if (server.url.indexOf(&#x27;@&#x27;) &gt; 0) {
+      var protocolParts = server.url.split(&#x27;:&#x27;);
+      var urlParts = protocolParts[1].split(&#x27;@&#x27;);
+      server.username = urlParts[0];
+      server.url = protocolParts[0] + &#x27;:&#x27; + urlParts[1];
+
+      // add the ICE server port
+      if (protocolParts[2]) {
+        server.url += &#x27;:&#x27; + protocolParts[2];
+      }
+    }
+
+    var username = typeof server.username === &#x27;string&#x27; ? server.username : &#x27;none&#x27;;
+    var credential = typeof server.credential === &#x27;string&#x27; ? server.credential : &#x27;none&#x27;;
+
+    if (server.url.indexOf(&#x27;turn&#x27;) === 0) {
+      if (this._TURNTransport === this.TURN_TRANSPORT.ANY) {
+        pushIceServer(username, credential, server.url);
+
+      } else {
+        var rawUrl = server.url;
+
+        if (rawUrl.indexOf(&#x27;?transport=&#x27;) &gt; 0) {
+          rawUrl = rawUrl.split(&#x27;?transport=&#x27;)[0];
+        }
+
+        if (this._TURNTransport === this.TURN_TRANSPORT.NONE) {
+          pushIceServer(username, credential, rawUrl);
+        } else if (this._TURNTransport === this.TURN_TRANSPORT.UDP) {
+          pushIceServer(username, credential, rawUrl + &#x27;?transport=udp&#x27;);
+        } else if (this._TURNTransport === this.TURN_TRANSPORT.TCP) {
+          pushIceServer(username, credential, rawUrl + &#x27;?transport=tcp&#x27;);
+        } else if (this._TURNTransport === this.TURN_TRANSPORT.ALL) {
+          pushIceServer(username, credential, rawUrl + &#x27;?transport=tcp&#x27;);
+          pushIceServer(username, credential, rawUrl + &#x27;?transport=udp&#x27;);
+        } else {
+          log.warn(&#x27;Invalid TURN transport option &quot;&#x27; + this._TURNTransport +
+            &#x27;&quot;. Ignoring TURN server at index&#x27; + i, clone(server));
+          continue;
+        }
+      }
+    } else {
+      pushIceServer(username, credential, server.url);
+    }
+  }
+
+  // add mozilla STUN for firefox
+  if (this._enableSTUN &amp;&amp; this._usePublicSTUN &amp;&amp; window.webrtcDetectedBrowser === &#x27;firefox&#x27;) {
+    pushIceServer(&#x27;none&#x27;, &#x27;none&#x27;, &#x27;stun:stun.services.mozilla.com&#x27;, 0);
+  }
+
+  var hasUrlsSupport = false;
+
+  if (window.webrtcDetectedBrowser === &#x27;chrome&#x27; &amp;&amp; window.webrtcDetectedVersion &gt; 34) {
+    hasUrlsSupport = true;
+  }
+
+  if (window.webrtcDetectedBrowser === &#x27;firefox&#x27; &amp;&amp; window.webrtcDetectedVersion &gt; 38) {
+    hasUrlsSupport = true;
+  }
+
+  if (window.webrtcDetectedBrowser === &#x27;opera&#x27; &amp;&amp; window.webrtcDetectedVersion &gt; 31) {
+    hasUrlsSupport = true;
+  }
+
+  // plugin supports .urls
+  if (window.webrtcDetectedBrowser === &#x27;safari&#x27; || window.webrtcDetectedBrowser === &#x27;IE&#x27;) {
+    hasUrlsSupport = true;
+  }
+
+  for (var serverUsername in iceServersList) {
+    if (iceServersList.hasOwnProperty(serverUsername)) {
+      for (var serverCred in iceServersList[serverUsername]) {
+        if (iceServersList[serverUsername].hasOwnProperty(serverCred)) {
+          if (hasUrlsSupport) {
+            var urlsItem = {
+              urls: iceServersList[serverUsername][serverCred]
+            };
+            if (serverUsername !== &#x27;none&#x27;) {
+              urlsItem.username = serverUsername;
+            }
+            if (serverCred !== &#x27;none&#x27;) {
+              urlsItem.credential = serverCred;
+            }
+            newIceServers.push(urlsItem);
+          } else {
+            for (var j = 0; j &lt; iceServersList[serverUsername][serverCred].length; j++) {
+              var urlItem = {
+                url: iceServersList[serverUsername][serverCred][j]
+              };
+              if (serverUsername !== &#x27;none&#x27;) {
+                urlItem.username = serverUsername;
+              }
+              if (serverCred !== &#x27;none&#x27;) {
+                urlItem.credential = serverCred;
+              }
+              newIceServers.push(urlItem);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  log.log(&#x27;Output iceServers configuration:&#x27;, newIceServers);
+
+  return {
+    iceServers: newIceServers
+  };
+};
+    </pre>
+</div>
+
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>

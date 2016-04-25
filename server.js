@@ -3,7 +3,8 @@ var http = require('http');
 var file = new(static.Server)();
 var app = http.createServer(function (req, res) {
   file.serve(req, res);
-    console.warn ("HEADER ALERT: " + req.headers);
+    console.warn ("HEADER ALERT: ");
+    console.warn(req.headers);
 }).listen(process.env.PORT || 2013);
 
 //app.use(function(req, res, next) {

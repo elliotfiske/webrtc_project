@@ -2,16 +2,17 @@ var static = require('node-static');
 var http = require('http');
 var file = new(static.Server)();
 var app = http.createServer(function (req, res) {
-  file.serve(req, res);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    // res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE, CONNECT');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
+    file.serve(req, res);
+
     console.warn ("HEADER ALERT: ");
     console.warn(req.headers);
 }).listen(process.env.PORT || 2013);
-
-//app.use(function(req, res, next) {
-//        res.header("Access-Control-Allow-Origin", "*");
-//    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-//    next();
-//});
 
 var io = require('socket.io').listen(app);
 io.sockets.on('connection', function (socket){

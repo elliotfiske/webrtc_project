@@ -309,6 +309,8 @@ function setDefaultCodec(mLine, payload) {
 
 // Strip CN from sdp before CN constraints is ready.
 function removeCN(sdpLines, mLineIndex) {
+  if (!mLineIndex) return sdpLines;
+
   var mLineElements = sdpLines[mLineIndex].split(' ');
   // Scan from end for the convenience of removing an item.
   for (var i = sdpLines.length-1; i >= 0; i--) {

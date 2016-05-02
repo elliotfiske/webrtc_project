@@ -32,6 +32,14 @@
 <br>
 <br>
 
+<form id="message-form">
+  Enter a messge for all peers: <input type="text" id="message-entry"><br>
+  <input id="send-btn" type="submit" value="Send!">
+</form>
+
+<br>
+<br>
+
 <div id="log"></div>
 
 </div>
@@ -44,11 +52,21 @@
 
 	var global_conn;
 	var peer = new Peer({key: 'is1zfbruud31sjor'});
+	var my_id = "not set";
 
 	// Open the connection to the PeerJS servers, and update the label
 	peer.on('open', function(id) {
   		$("#my-peer-id").html("My ID is: <br /> <b>" + id + "</b>");
+  		my_id = id;
 	});
+
+	function receive_message(data) {
+		$("#log").append(
+		                 $('<div/>')
+		                 .addClass("message")
+		                 .text(data.username + ": " + data.message)
+		                 );
+	}
 
 	// Called when I connect to someone, or when someone connects to me!
 	function new_connection_established(connection) {
@@ -56,18 +74,14 @@
 		$("#log").append(
 		                 $('<div/>')
 		                 .addClass("new-connection-message")
-		                 .text("Successfully connected to " + connection.peer)
+		                 .append("<b/>")
+		                 	  .text("Successfully connected to " + connection.peer)
 		                 );
 
 		// This sets up a function to be called whenever we receive data
 		//  from this connection.
 		connection.on('data', function(data) {
-			$("#log").append(
-			                 $('<div/>')
-			                 .addClass("message")
-			                 .append("<b/>")
-			                     .text(data.username + data.message)
-			                 );
+			receive_message(data);
 		});
 
 		// Peer died! Let the user know.
@@ -76,7 +90,7 @@
 			                 $('<div/>')
 			                 .addClass("connection-closed-message")
 			                 .append("<b/>")
-			                  	.text(onnection.peer + " disconnected")
+			                    .text(connection.peer + " disconnected")
 			                 );
 		});
 	}
@@ -97,11 +111,40 @@
 		return false;
 	});
 
+	// Stop the default form action (which is to open another page)
+	$('#message-form').submit(false);
+
+	// This is called when the user hits "Send"
+	$("#send-btn").click(function() {
+		// Send a data message to all peers
+		for (var ndx = 0; ndx < connected_friends.length; ndx++) {
+			connected_friends[ndx].send({
+					username: my_id, 
+					message: $("#message-entry").val()});
+		}
+
+		// Also print my own messages
+		receive_message({
+					username: "me", 
+					message: $("#message-entry").val()});
+
+		return false;
+	});
+
 
 	// Listen for new peers connecting TO me
 	peer.on('connection', function(incoming_connection) { 
 		new_connection_established(incoming_connection);
 	});
+
+	// Alert friends when we're disconnecting
+	window.onbeforeunload = function() {
+   	for (var ndx = 0; ndx < connected_friends.length; ndx++) {
+			connected_friends[ndx].send({
+					username: my_id, 
+					message: "Goodbye everyone, I'm leaving!"});
+		}
+	}
 </script>
 
 </body>

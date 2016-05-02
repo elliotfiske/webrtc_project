@@ -5,6 +5,7 @@
 <meta name='keywords' content='WebRTC, HTML5, JavaScript' />
 <meta name='description' content='WebRTC Reference App' />
 <meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1'>
+<script type="text/javascript" src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
 
 <base target='_blank'>
 
@@ -18,47 +19,89 @@
 
 <div id='container'>
 
+<div id="my-peer-id"></div>
+
+<br>
+<br>
+
+<form id="connect-form">
+  Enter a Peer ID to connect to: <input type="text" name="peer-id" id="id-entry"><br>
+  <input id="connect-btn" type="submit" value="Connect!">
+</form>
+
+<br>
+<br>
+
+<div id="log"></div>
 
 </div>
 
 <script src="http://cdn.peerjs.com/0.3/peer.min.js"></script>
 
 <script type="text/javascript">
+   // Stores the incoming connections
+   var connected_friends = [];
+
 	var global_conn;
 	var peer = new Peer({key: 'is1zfbruud31sjor'});
 
+	// Open the connection to the PeerJS servers, and update the label
 	peer.on('open', function(id) {
-  		console.log('My peer ID is: ' + id);
+  		$("#my-peer-id").html("My ID is: <br /> <b>" + id + "</b>");
+	});
+
+	// Called when I connect to someone, or when someone connects to me!
+	function new_connection_established(connection) {
+		connected_friends.push(connection);
+		$("#log").append(
+		                 $('<div/>')
+		                 .addClass("new-connection-message")
+		                 .text("Successfully connected to " + connection.peer)
+		                 );
+
+		// This sets up a function to be called whenever we receive data
+		//  from this connection.
+		connection.on('data', function(data) {
+			$("#log").append(
+			                 $('<div/>')
+			                 .addClass("message")
+			                 .append("<b/>")
+			                     .text(data.username + data.message)
+			                 );
+		});
+
+		// Peer died! Let the user know.
+		connection.on('close', function() {
+			$("#log").append(
+			                 $('<div/>')
+			                 .addClass("connection-closed-message")
+			                 .append("<b/>")
+			                  	.text(onnection.peer + " disconnected")
+			                 );
+		});
+	}
+
+
+	// Stop the default form action (which is to open another page)
+	$('#connect-form').submit(false);
+
+	// This is called when the user hits "Connect"
+	$("#connect-btn").click(function() {
+		// Tries to connect to a new friend with the peer ID "other_id"
+		var new_connection = peer.connect($("#id-entry").val());
+
+		new_connection.on('open', function() {
+			new_connection_established(new_connection);
+		});
+
+		return false;
 	});
 
 
-	if (window.location.hash) {
-		var other_id = window.location.hash.substr(1);
-		var conn = peer.connect(other_id);
-
-		console.log("Tryna connect to " + other_id)
-
-		conn.on('open', function() {
-			// Receive messages
-			conn.on('data', function(data) {
-				console.log('Received (child) ', data);
-			});
-
-			// Send messages
-			conn.send('Hello!');
-		});
-
-		global_conn = conn;
-	}
-	else {		
-		peer.on('connection', function(conn) { 
-			global_conn = conn;
-			console.log("GREAT SUCCESS");
-			conn.on('data', function(data) {
-				console.log('Received (parent) ', data);
-			});
-		});
-	}
+	// Listen for new peers connecting TO me
+	peer.on('connection', function(incoming_connection) { 
+		new_connection_established(incoming_connection);
+	});
 </script>
 
 </body>

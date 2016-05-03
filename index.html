@@ -112,12 +112,21 @@
 
 	// This is called when the user hits "Connect"
 	$("#connect-btn").click(function() {
-		// Tries to connect to a new friend with the peer ID "other_id"
-		var new_connection = peer.connect($("#id-entry").val());
 
-		new_connection.on('open', function() {
-			new_connection_established(new_connection);
-		});
+		conn_id = $("#id-entry").val();
+		
+		if (conn_id.length > 0)
+		{
+			// Tries to connect to a new friend with the peer ID "other_id"
+			var new_connection = peer.connect(conn_id);
+
+			new_connection.on('open', function() {
+				new_connection_established(new_connection);
+			});
+
+			// Clear the id field after connection established
+			$('#id-entry').val("");
+		}
 
 		return false;
 	});
@@ -134,20 +143,27 @@
         else
             name = my_id;
     
-    
-		// Send a data message to all peers
-		for (var ndx = 0; ndx < connected_friends.length; ndx++) {
-            
-        
-			connected_friends[ndx].send({
-					username: name, 
-					message: $("#message-entry").val()});
+    	msg = $("#message-entry").val() ;
+
+    	if (msg. length > 0)
+	    {
+			// Send a data message to all peers
+			for (var ndx = 0; ndx < connected_friends.length; ndx++) {
+	            
+	        
+				connected_friends[ndx].send({
+						username: name, 
+						message: msg});
+			}
+	        
+			// Also print my own messages
+			receive_message({
+						username: "me", 
+						message: msg});
+
+			// Clear the message entry field after connection established
+			$('#message-entry').val("");
 		}
-        
-		// Also print my own messages
-		receive_message({
-					username: "me", 
-					message: $("#message-entry").val()});
 
 		return false;
 	});
@@ -155,8 +171,16 @@
     $("#handle-btn").click(function() {
 		//Rename handle and display
         handle = $("#handle-entry").val();
-        
-        $("#handle").html("My handle is: <br /> <b>" + handle + "</b>");
+
+        if (handle.length > 0)
+        {
+        	$("#handle").html("My handle is: <br /> <b>" + handle + "</b>");
+        	
+        	// Clear the message entry field after connection established
+			$('#handle-entry').val("");
+        }
+		
+
         return false;
 	});
 

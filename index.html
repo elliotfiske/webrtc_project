@@ -47,6 +47,11 @@
 <script src="http://cdn.peerjs.com/0.3/peer.min.js"></script>
 
 <script type="text/javascript">
+   // Constants
+   var MESSAGE = 0;
+   var ADD_CONNECTION = 1;
+   var USER_DISCONNECTED = 2;
+
    // Stores the incoming connections
    var connected_friends = [];
 
@@ -61,11 +66,13 @@
 	});
 
 	function receive_message(data) {
-		$("#log").append(
-		                 $('<div/>')
-		                 .addClass("message")
-		                 .text(data.username + ": " + data.message)
-		                 );
+		if (data.message) {
+			$("#log").append(
+			                 $('<div/>')
+			                 .addClass("message")
+			                 .html("<b>" + data.username + ": </b>" + data.message)
+			                 );
+		}
 	}
 
 	// Called when I connect to someone, or when someone connects to me!
@@ -74,8 +81,7 @@
 		$("#log").append(
 		                 $('<div/>')
 		                 .addClass("new-connection-message")
-		                 .append("<b/>")
-		                 	  .text("Successfully connected to " + connection.peer)
+	                 	  .html("<b>Successfully connected to " + connection.peer + "</b>")
 		                 );
 
 		// This sets up a function to be called whenever we receive data
@@ -89,8 +95,7 @@
 			$("#log").append(
 			                 $('<div/>')
 			                 .addClass("connection-closed-message")
-			                 .append("<b/>")
-			                    .text(connection.peer + " disconnected")
+		                    .html("<b>" + connection.peer + " disconnected </b>")
 			                 );
 		});
 	}
@@ -141,6 +146,7 @@
 	window.onbeforeunload = function() {
    	for (var ndx = 0; ndx < connected_friends.length; ndx++) {
 			connected_friends[ndx].send({
+				   type: MESSAGE,
 					username: my_id, 
 					message: "Goodbye everyone, I'm leaving!"});
 		}

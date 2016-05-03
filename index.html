@@ -21,12 +21,22 @@
 
 <div id="my-peer-id"></div>
 
+<div id="handle"></div>
+
 <br>
 <br>
 
 <form id="connect-form">
   Enter a Peer ID to connect to: <input type="text" name="peer-id" id="id-entry"><br>
   <input id="connect-btn" type="submit" value="Connect!">
+</form>
+
+<br>
+<br>
+
+<form id="name-form">
+  Enter a handle: <input type="text" name="handle" id="handle-entry"><br>
+  <input id="handle-btn" type="submit" value="Rename">
 </form>
 
 <br>
@@ -58,6 +68,7 @@
 	var global_conn;
 	var peer = new Peer({key: 'is1zfbruud31sjor'});
 	var my_id = "not set";
+    var handle = "not set";
 
 	// Open the connection to the PeerJS servers, and update the label
 	peer.on('open', function(id) {
@@ -121,13 +132,23 @@
 
 	// This is called when the user hits "Send"
 	$("#send-btn").click(function() {
+        //find proper name
+        var name = 0;
+        if(handle != "not set")
+            name = handle;
+        else
+            name = my_id;
+    
+    
 		// Send a data message to all peers
 		for (var ndx = 0; ndx < connected_friends.length; ndx++) {
+            
+        
 			connected_friends[ndx].send({
-					username: my_id, 
+					username: name, 
 					message: $("#message-entry").val()});
 		}
-
+        
 		// Also print my own messages
 		receive_message({
 					username: "me", 
@@ -136,6 +157,13 @@
 		return false;
 	});
 
+    $("#handle-btn").click(function() {
+		//Rename handle and display
+        handle = $("#handle-entry").val();
+        
+        $("#handle").html("My handle is: <br /> <b>" + handle + "</b>");
+        return false;
+	});
 
 	// Listen for new peers connecting TO me
 	peer.on('connection', function(incoming_connection) { 

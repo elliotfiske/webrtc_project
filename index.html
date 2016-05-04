@@ -68,7 +68,7 @@
 	var global_conn;
 	var peer = new Peer({key: 'is1zfbruud31sjor'});
 	var my_id = "not set";
-    var handle = "not set";
+	var handle = "not set";
 
 	// Open the connection to the PeerJS servers, and update the label
 	peer.on('open', function(id) {
@@ -76,24 +76,63 @@
   		my_id = id;
 	});
 
+   // Leader told me to connect!
+	function leader_told_me_to_connect(new_peer_id) {
+		// Verify I'm not already connected
+		for (var ndx = 0; ndx < connected_friends.length; ndx++) {
+			if (connected_friends[ndx].peer == new_peer_id) {
+				return;
+			}
+		}
+
+		var new_connection = peer.connect(new_peer_id);
+
+		new_connection.on('open', function() {
+			new_connection_established(new_connection);
+		});
+	}
+
 	function receive_message(data) {
-		if (data.message) {
-			$("#log").append(
-			                 $('<div/>')
-			                 .addClass("message")
-			                 .html("<b>" + data.username + ": </b>" + data.message)
-			                 );
+		console.log("Received message with data type " + data.type);
+		switch (data.type) {
+			case MESSAGE:
+				$("#log").append(
+				                 $('<div/>')
+				                 .addClass("message")
+				                 .html("<b>" + data.username + ": </b>" + data.message)
+				                 );
+				break;
+			case ADD_CONNECTION:
+				// The leader has told us to add a new friend. DO IT
+				leader_told_me_to_connect(data.new_id)
+				break;
+			case USER_DISCONNECTED:
+				// Nothing yet, this will be used to remake routes etc.
+				break;
+			default:
+				console.warn("Bad data.type value: " + data.type);
+				break;	
 		}
 	}
 
+	
+
 	// Called when I connect to someone, or when someone connects to me!
 	function new_connection_established(connection) {
-		connected_friends.push(connection);
 		$("#log").append(
 		                 $('<div/>')
 		                 .addClass("new-connection-message")
 	                 	  .html("<b>Successfully connected to " + connection.peer + "</b>")
 		                 );
+
+		// Tell the new user about all my friends
+		for (var ndx = 0; ndx < connected_friends.length; ndx++) {
+			console.log("Telling the peer " + connection.peer + " all about my old friend " + connected_friends[ndx].peer);
+			connection.send({
+				type: ADD_CONNECTION,
+				new_id: connected_friends[ndx].peer
+			});
+		}
 
 		// This sets up a function to be called whenever we receive data
 		//  from this connection.
@@ -109,6 +148,8 @@
 		                    .html("<b>" + connection.peer + " disconnected </b>")
 			                 );
 		});
+
+		connected_friends.push(connection);
 	}
 
 
@@ -142,15 +183,15 @@
     
 		// Send a data message to all peers
 		for (var ndx = 0; ndx < connected_friends.length; ndx++) {
-            
-        
 			connected_friends[ndx].send({
+				   type: MESSAGE,
 					username: name, 
 					message: $("#message-entry").val()});
 		}
         
 		// Also print my own messages
 		receive_message({
+					type: MESSAGE,
 					username: "me", 
 					message: $("#message-entry").val()});
 

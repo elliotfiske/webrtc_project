@@ -103,7 +103,15 @@
 			                 .append("<b/>")
 			                    .text(connection.peer + " disconnected")
 			                 );
+			remove_connected_friend(connected_friends.indexOf(connection))
 		});
+	}
+
+	function remove_connected_friend(index)
+	{
+		console.log("remove_connected_friend at index " + index);
+
+		connected_friends.splice(index, 1);
 	}
 
 

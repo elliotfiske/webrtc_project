@@ -160,11 +160,19 @@
                           .addClass("connection-closed-message")
                           .html("<b>" + connection.peer + " disconnected </b>")
                           );
+         remove_connected_friend(connected_friends.indexOf(connection));
       });
 
       connected_friends.push(connection);
    }
 
+   	// Remove the specified friend from the connection list
+   	function remove_connected_friend(index)
+	{
+		console.log("remove_connected_friend at index " + index);
+
+		connected_friends.splice(index, 1);
+	}
 
    // Stop the default form action (which is to open another page)
    $('#connect-form').submit(false);

@@ -78,6 +78,7 @@
 
    // Stores the incoming connections
    var connected_friends = [];
+   var message_log = [];
 
    var global_conn;
    var peer = new Peer({key: 'is1zfbruud31sjor'});
@@ -111,11 +112,21 @@
       console.log("Received message with data type " + data.type);
       switch (data.type) {
          case MESSAGE:
-            $("#log").append(
-                             $('<div/>')
-                             .addClass("message")
-                             .html("<b>" + data.username + ": </b>" + data.message)
-                             );
+            if (data.username == handle) {
+               $("#log").append(
+                                $('<div/>')
+                                .addClass("message")
+                                .html("<b>me: </b>" + data.message)
+                                );
+            }
+            else {
+               $("#log").append(
+                                $('<div/>')
+                                .addClass("message")
+                                .html("<b>" + data.username + ": </b>" + data.message)
+                                );
+            }
+            message_log.push(data);
             break;
          case ADD_CONNECTION:
             // The leader has told us to add a new friend. DO IT
@@ -129,6 +140,18 @@
             break;   
       }
    }
+
+   // Sends each message in the message log.
+   function send_log(connection, messages) {
+      for (var ndx = 0; ndx < messages.length; ndx++) {
+      // Send the message log to the new user
+      connection.send({
+            type: MESSAGE,
+            username: messages[ndx].username,
+            message: messages[ndx].message});   
+      }
+   }
+
 
    // Called when I connect to someone, or when someone connects to me!
    function new_connection_established(connection) {
@@ -164,6 +187,9 @@
       });
 
       connected_friends.push(connection);
+
+      // Send the message log to the newly connected client.
+      send_log(connection, message_log);
    }
 
    	// Remove the specified friend from the connection list
@@ -227,7 +253,7 @@
          // Also print my own messages
          receive_message({
             type: MESSAGE,
-            username: "me", 
+            username: name, 
             message: msg});
 
          // Clear the message entry field after connection established

@@ -60,17 +60,6 @@
 
 <script type="text/javascript">
 
-   // Parse.initialize("k7F9lyAI3VI9jJedvxSAcMO0gF4aUUX3QhAOFuQu", "dGTxclC0TwGC0pP6Y0ZEKDloAI9VzHlPmzSKQ3L7");
-    Parse.initialize("1QOrGcGEXlkaE0HiMiCf9aR8vUC0vDQ5diErXt1Q", "MuQXq7b3cMDNKoh1neHL9lqLi4raKmM657Y63k4V");
-
-   // Parse.serverURL = 'http://api.parse.com/parse'
-
-   var TestObject = Parse.Object.extend("LeaderID");
-   var testObject = new TestObject();
-   testObject.save({id: "test"}).then(function(object) {
-     alert("yay! it worked");
-   });
-
    // Constants
    var MESSAGE = 0;
    var ADD_CONNECTION = 1;
@@ -143,7 +132,7 @@
          console.log("Telling the peer " + connection.peer + " all about my old friend " + connected_friends[ndx].peer);
          connection.send({
             type: ADD_CONNECTION,
-            new_id: new_id
+            new_id: connected_friends[ndx].peer
          });
       }
 

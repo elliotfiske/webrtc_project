@@ -23,6 +23,8 @@
 
 <div id="my-peer-id"></div>
 
+<div id="leader-peer-id"></div>
+
 <div id="handle"></div>
 
 <br>
@@ -58,6 +60,26 @@
 
 <script src="http://cdn.peerjs.com/0.3/peer.js"></script>
 
+<script type="text/javascript">var my_id = "not set";</script>
+
+<?php 
+   function checkForLeader() {
+      $f_name = "leader_peer_id.txt";
+
+      $f_handle = fopen($f_name, r) or die ("Unable to access leader information!");
+
+      if (filesize($f_name) > 0) {
+         $leader_peer = fread($f_handle, filesize($f_name));
+      } else {
+         $leader_peer = "";
+      }
+
+      fclose($f_handle);
+
+      return $leader_peer;
+   }
+?>
+
 <script type="text/javascript">
 
    // Constants
@@ -70,13 +92,25 @@
 
    var global_conn;
    var peer = new Peer({key: 'is1zfbruud31sjor'});
-   var my_id = "not set";
+   //var my_id = "not set";
    var handle = "not set";
+   var leader = "not set";
 
    // Open the connection to the PeerJS servers, and update the label
    peer.on('open', function(id) {
       $("#my-peer-id").html("My ID is: <br /> <b>" + id + "</b>");
       my_id = id;
+      
+      // check if there is a leader
+      leader = <?php echo json_encode(checkForLeader()); ?>;
+      if (leader.length == 0) {
+         // there is no leader, make me the leader!
+         //window.location.href = "index.php?newLeader=" + my_id;
+         
+
+      }
+
+      $("#leader-peer-id").html("The Leader is: <br /> <b>" + leader + "</b>");
    });
 
    // Leader told me to connect!

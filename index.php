@@ -8,6 +8,9 @@
 <meta name='description' content='WebRTC Reference App' />
 <meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1'>
 <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+<script type="text/javascript" src="https://code.createjs.com/createjs-2015.11.26.min.js"></script>
+<script type="text/javascript" src="https://code.createjs.com/tweenjs-0.6.2.min.js"></script>
+<script type="text/javascript" src="graph.js"></script>
 
 <base target='_blank'>
 
@@ -17,7 +20,7 @@
 
 </head>
 
-<body>
+<body onload="init();">
 
 <div id='container'>
 
@@ -58,6 +61,8 @@
 
 </div>
 
+<canvas id="graph" width="600" height="500" style="width: 600px; height: 500px;"></canvas>
+
 <script src="http://cdn.peerjs.com/0.3/peer.js"></script>
 
 <script type="text/javascript">var my_id = "not set";</script>
@@ -89,6 +94,7 @@
 
    // Stores the incoming connections
    var connected_friends = [];
+   var message_log = [];
 
    var global_conn;
    var peer = new Peer({key: 'is1zfbruud31sjor'});
@@ -134,11 +140,21 @@
       console.log("Received message with data type " + data.type);
       switch (data.type) {
          case MESSAGE:
-            $("#log").append(
-                             $('<div/>')
-                             .addClass("message")
-                             .html("<b>" + data.username + ": </b>" + data.message)
-                             );
+            if (data.username == handle) {
+               $("#log").append(
+                                $('<div/>')
+                                .addClass("message")
+                                .html("<b>me: </b>" + data.message)
+                                );
+            }
+            else {
+               $("#log").append(
+                                $('<div/>')
+                                .addClass("message")
+                                .html("<b>" + data.username + ": </b>" + data.message)
+                                );
+            }
+            message_log.push(data);
             break;
          case ADD_CONNECTION:
             // The leader has told us to add a new friend. DO IT
@@ -152,6 +168,18 @@
             break;   
       }
    }
+
+   // Sends each message in the message log.
+   function send_log(connection, messages) {
+      for (var ndx = 0; ndx < messages.length; ndx++) {
+      // Send the message log to the new user
+      connection.send({
+            type: MESSAGE,
+            username: messages[ndx].username,
+            message: messages[ndx].message});   
+      }
+   }
+
 
    // Called when I connect to someone, or when someone connects to me!
    function new_connection_established(connection) {
@@ -187,6 +215,9 @@
       });
 
       connected_friends.push(connection);
+
+      // Send the message log to the newly connected client.
+      send_log(connection, message_log);
    }
 
    	// Remove the specified friend from the connection list
@@ -250,7 +281,7 @@
          // Also print my own messages
          receive_message({
             type: MESSAGE,
-            username: "me", 
+            username: name, 
             message: msg});
 
          // Clear the message entry field after connection established

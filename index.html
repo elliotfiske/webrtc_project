@@ -8,6 +8,9 @@
 <meta name='description' content='WebRTC Reference App' />
 <meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1'>
 <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+<script type="text/javascript" src="https://code.createjs.com/createjs-2015.11.26.min.js"></script>
+<script type="text/javascript" src="https://code.createjs.com/tweenjs-0.6.2.min.js"></script>
+<script type="text/javascript" src="graph.js"></script>
 
 <base target='_blank'>
 
@@ -17,7 +20,7 @@
 
 </head>
 
-<body>
+<body onload="init();">
 
 <div id='container'>
 
@@ -55,6 +58,8 @@
 <div id="log"></div>
 
 </div>
+
+<canvas id="graph" width="600" height="500" style="width: 600px; height: 500px;"></canvas>
 
 <script src="http://cdn.peerjs.com/0.3/peer.js"></script>
 

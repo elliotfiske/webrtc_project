@@ -7,6 +7,9 @@
 <meta name='keywords' content='WebRTC, HTML5, JavaScript' />
 <meta name='description' content='WebRTC Reference App' />
 <meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1'>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+
 <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
 <script type="text/javascript" src="https://code.createjs.com/createjs-2015.11.26.min.js"></script>
 <script type="text/javascript" src="https://code.createjs.com/tweenjs-0.6.2.min.js"></script>
@@ -208,6 +211,9 @@
               type: ADD_CONNECTION,
               new_id: connected_friends[ndx].peer
            });
+
+           // Dumb: link all the existing connections together
+           
         }
 
         // Send the message log to the newly connected client.
@@ -232,7 +238,10 @@
 
       connected_friends.push(connection);
 
-      
+      // TODO: smarter graphs
+      graph.addNode(connection.peer);
+      graph.addLink(connection.peer, handle);
+
    }
 
    	// Remove the specified friend from the connection list
@@ -318,6 +327,8 @@
          $('#handle-entry').val("");
         }
       
+        // TODO: smarter graphs
+        graph.addNode(handle);
 
         return false;
    });

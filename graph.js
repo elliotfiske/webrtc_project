@@ -1,43 +1,115 @@
 
-var canvas;
-var stage;
+function myGraph(el) {
 
-function init() {
-	canvas = document.getElementById("graph");
-	stage = new createjs.Stage(canvas);
-	stage.autoClear = true;
+    // Add and remove elements on the graph object
+    this.addNode = function (id) {
+        nodes.push({"id":id});
+        update();
+    }
 
-	var ball = new createjs.Shape();
-	ball.graphics.setStrokeStyle(5, 'round', 'round');
-	ball.graphics.beginStroke('#000000');
-	ball.graphics.beginFill("#FF0000").drawCircle(0, 0, 50);
-	ball.graphics.endStroke();
-	ball.graphics.endFill();
-	ball.graphics.setStrokeStyle(1, 'round', 'round');
-	ball.graphics.beginStroke('#000000');
-	ball.graphics.moveTo(0, 0);
-	ball.graphics.lineTo(0, 50);
+    this.removeNode = function (id) {
+        var i = 0;
+        var n = findNode(id);
+        while (i < links.length) {
+            if ((links[i]['source'] === n)||(links[i]['target'] == n)) links.splice(i,1);
+            else i++;
+        }
+        var index = findNodeIndex(id);
+        if(index !== undefined) {
+            nodes.splice(index, 1);
+            update();
+        }
+    }
 
-	ball.graphics.endStroke();
-	ball.x = 200;
-	ball.y = -50;
+    this.addLink = function (sourceId, targetId) {
+        var sourceNode = findNode(sourceId);
+        var targetNode = findNode(targetId);
 
-	var tween = createjs.Tween.get(ball, {loop: true})
-			.to({x: ball.x, y: canvas.height - 55, rotation: -360}, 1500, createjs.Ease.bounceOut)
-			.wait(1000)
-			.to({x: canvas.width - 55, rotation: 360}, 2500, createjs.Ease.bounceOut)
-			.wait(1000).call(handleComplete)
-			.to({scaleX: 2, scaleY: 2, x: canvas.width - 110, y: canvas.height - 110}, 2500, createjs.Ease.bounceOut)
-			.wait(1000)
-			.to({scaleX: .5, scaleY: .5, x: 30, rotation: -360, y: canvas.height - 30}, 2500, createjs.Ease.bounceOut);
+        if((sourceNode !== undefined) && (targetNode !== undefined)) {
+            links.push({"source": sourceNode, "target": targetNode});
+            update();
+        }
+    }
 
-	stage.addChild(ball);
+    var findNode = function (id) {
+        for (var i=0; i < nodes.length; i++) {
+            if (nodes[i].id === id)
+                return nodes[i]
+        };
+    }
 
-	createjs.Ticker.addEventListener("tick", stage);
+    var findNodeIndex = function (id) {
+        for (var i=0; i < nodes.length; i++) {
+            if (nodes[i].id === id)
+                return i
+        };
+    }
+
+    // set up the D3 visualisation in the specified element
+    var w = $(el).innerWidth(),
+        h = $(el).innerHeight();
+
+    var vis = this.vis = d3.select(el).append("svg:svg")
+        .attr("width", w)
+        .attr("height", h);
+
+    var force = d3.layout.force()
+        .gravity(.05)
+        .distance(100)
+        .charge(-100)
+        .size([w, h]);
+
+    var nodes = force.nodes(),
+        links = force.links();
+
+    var update = function () {
+
+        var link = vis.selectAll("line.link")
+            .data(links, function(d) { return d.source.id + "-" + d.target.id; });
+
+        link.enter().insert("line")
+            .attr("class", "link");
+
+        link.exit().remove();
+
+        var node = vis.selectAll("g.node")
+            .data(nodes, function(d) { return d.id;});
+
+        var nodeEnter = node.enter().append("g")
+            .attr("class", "node")
+            .call(force.drag);
+
+        nodeEnter.append("image")
+            .attr("class", "circle")
+            .attr("xlink:href", "https://github.com/favicon.ico")
+            .attr("x", "-8px")
+            .attr("y", "-8px")
+            .attr("width", "16px")
+            .attr("height", "16px");
+
+        nodeEnter.append("text")
+            .attr("class", "nodetext")
+            .attr("dx", 12)
+            .attr("dy", ".35em")
+            .text(function(d) {return d.id});
+
+        node.exit().remove();
+
+        force.on("tick", function() {
+          link.attr("x1", function(d) { return d.source.x; })
+              .attr("y1", function(d) { return d.source.y; })
+              .attr("x2", function(d) { return d.target.x; })
+              .attr("y2", function(d) { return d.target.y; });
+
+          node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+        });
+
+        // Restart the force layout.
+        force.start();
+    }
+
+    // Make it all go
+    update();
 }
 
-function handleComplete(tween) {
-	var ball = tween._target;
-
-}
-
+graph = new myGraph("#graph");

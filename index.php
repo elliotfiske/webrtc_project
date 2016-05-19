@@ -61,7 +61,7 @@
 
 </div>
 
-<canvas id="graph" width="600" height="500" style="width: 600px; height: 500px;"></canvas>
+<div id="graph"></div>
 
 <script src="http://cdn.peerjs.com/0.3/peer.js"></script>
 

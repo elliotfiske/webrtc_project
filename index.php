@@ -112,11 +112,21 @@
       if (leader.length == 0) {
          // there is no leader, make me the leader!
          //window.location.href = "index.php?newLeader=" + my_id;
-         
-
+         $.ajax({
+            url: 'updateLeader.php',
+            type: 'GET',
+            data: {'newID':my_id},
+            success: function(resp) {
+                leader = my_id;
+                $("#leader-peer-id").html("The Leader is: <br /> <b>" + leader + "</b>")
+            }
+        }); 
       }
-
-      $("#leader-peer-id").html("The Leader is: <br /> <b>" + leader + "</b>");
+      else
+      {
+        $("#leader-peer-id").html("The Leader is: <br /> <b>" + leader + "</b>");
+        leader_told_me_to_connect(leader);
+      }
    });
 
    // Leader told me to connect!
@@ -190,12 +200,18 @@
                        );
 
       // Tell the new user about all my friends
-      for (var ndx = 0; ndx < connected_friends.length; ndx++) {
-         console.log("Telling the peer " + connection.peer + " all about my old friend " + connected_friends[ndx].peer);
-         connection.send({
-            type: ADD_CONNECTION,
-            new_id: connected_friends[ndx].peer
-         });
+      if (leader == my_id)
+      {
+        for (var ndx = 0; ndx < connected_friends.length; ndx++) {
+           console.log("Telling the peer " + connection.peer + " all about my old friend " + connected_friends[ndx].peer);
+           connection.send({
+              type: ADD_CONNECTION,
+              new_id: connected_friends[ndx].peer
+           });
+        }
+
+        // Send the message log to the newly connected client.
+        send_log(connection, message_log);
       }
 
       // This sets up a function to be called whenever we receive data
@@ -216,8 +232,7 @@
 
       connected_friends.push(connection);
 
-      // Send the message log to the newly connected client.
-      send_log(connection, message_log);
+      
    }
 
    	// Remove the specified friend from the connection list

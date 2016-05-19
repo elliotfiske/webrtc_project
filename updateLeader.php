@@ -5,15 +5,21 @@
 	parse_str($parts['query'], $query);
 
 	$new_peer_id = $query['newID'];
-	//$new_peer_id = (string)$new_peer_id;
 
-	$f_name = "leader_peer_id.txt";
+	//if (strlen($new_peer_id) > 0) {
 
-	$f_handle = fopen($f_name, w) or die ("Unable to overwrite leader information!");
+		$f_name = "leader_peer_id.txt";
 
-	fwrite($f_handle, $new_peer_id) or die ("Failed to Update leader");
+		$f_handle = fopen($f_name, w) or die ("Unable to overwrite leader information!");
 
-	fclose($f_handle);
+		fwrite($f_handle, $new_peer_id) or die ("Failed to Update leader");
 
-	echo "Updated Succesfully";
+		fclose($f_handle);
+
+		echo "Updated Succesfully";
+	/*}
+	else
+	{
+		die ("No valid new peer id passed in");
+	}*/
 ?>

@@ -33,13 +33,14 @@
       <br>
       <br>
 
+      <!-- REMOVING CONNECT FORM AS LEADER HANDLES THIS NOW
       <form id="connect-form">
          Enter a Peer ID to connect to: <input type="text" name="peer-id" id="id-entry"><br>
          <input id="connect-btn" type="submit" value="Connect!">
       </form>
-
       <br>
       <br>
+      -->      
 
       <form id="name-form">
          Enter a handle: <input type="text" name="handle" id="handle-entry"><br>
@@ -91,6 +92,8 @@
    var MESSAGE = 0;
    var ADD_CONNECTION = 1;
    var USER_DISCONNECTED = 2;
+   var UPDATE_HANDLE = 3;
+   var SELECT_NEW_LEADER = 4;
 
    // Stores the incoming connections
    var connected_friends = [];
@@ -98,9 +101,10 @@
 
    var global_conn;
    var peer = new Peer({key: 'is1zfbruud31sjor'});
-   //var my_id = "not set";
+   var my_id = "not set";
    var handle = "not set";
-   var leader = "not set";
+   var leader = {peer_id: "not set",
+                 conn: "not set"};
 
    // Open the connection to the PeerJS servers, and update the label
    peer.on('open', function(id) {
@@ -108,24 +112,24 @@
       my_id = id;
 
       // check if there is a leader
-      leader = <?php echo json_encode(checkForLeader()); ?>;
-      if (leader.length == 0) {
+      leader.peer_id = <?php echo json_encode(checkForLeader()); ?>;
+
+      if (leader.peer_id.length == 0) {
          // there is no leader, make me the leader!
-         //window.location.href = "index.php?newLeader=" + my_id;
          $.ajax({
             url: 'updateLeader.php',
             type: 'GET',
             data: {'newID':my_id},
             success: function(resp) {
-               leader = my_id;
-               $("#leader-peer-id").html("The Leader is: <br /> <b>" + leader + "</b>")
+               leader.peer_id = my_id;
+               $("#leader-peer-id").html("The Leader is: <br /> <b>" + leader.peer_id + "</b>")
             }
          }); 
       }
       else
       {
-         $("#leader-peer-id").html("The Leader is: <br /> <b>" + leader + "</b>");
-         leader_told_me_to_connect(leader);
+         $("#leader-peer-id").html("The Leader is: <br /> <b>" + leader.peer_id + "</b>");
+         leader.conn = leader_told_me_to_connect(leader.peer_id);
       }
    });
 
@@ -133,9 +137,9 @@
    function leader_told_me_to_connect(new_peer_id) {
       // Verify I'm not already connected
       for (var ndx = 0; ndx < connected_friends.length; ndx++) {
-         if (connected_friends[ndx].peer == new_peer_id ||
+         if (connected_friends[ndx].their_id.peer == new_peer_id ||
           my_id == new_peer_id) {
-            return;
+            return connected_friends[ndx].their_id;
          }
       }
 
@@ -144,12 +148,26 @@
       new_connection.on('open', function() {
          new_connection_established(new_connection);
       });
+
+      return new_connection;
    }
 
    function receive_message(data) {
       console.log("Received message with data type " + data.type);
       switch (data.type) {
          case MESSAGE:
+            // check if I am leader, so can forward message as needed
+            if (leader.peer_id == my_id) {
+               // I am the leader, forward this message to everyone else*
+               // *except for who sent the message!
+               for (var ndx = 0; ndx < connected_friends.length; ndx++) {
+                  if (connected_friends[ndx].username != data.username) {
+                     connected_friends[ndx].their_id.send(data);
+                  }
+               }
+            }
+
+            // add this message to my log
             if (data.username == handle) {
                $("#log").append(
                   $('<div/>')
@@ -159,9 +177,9 @@
             }
             else {
                $("#log").append(
-               $('<div/>')
-               .addClass("message")
-               .html("<b>" + data.username + ": </b>" + data.message)
+                  $('<div/>')
+                  .addClass("message")
+                  .html("<b>" + data.username + ": </b>" + data.message)
                );
             }
             message_log.push(data);
@@ -172,6 +190,27 @@
             break;
          case USER_DISCONNECTED:
             // Nothing yet, this will be used to remake routes etc.
+            alert("User disconnected: " + data.username);
+            break;
+         case UPDATE_HANDLE:
+            // update the handle for the specified connection
+            if (leader.peer_id == my_id) {
+               // I am the leader, forward this message to everyone else*
+               // *except for who sent the message!
+               for (var ndx = 0; ndx < connected_friends.length; ndx++) {
+                  if (connected_friends[ndx].their_id.peer != data.peer_id) {
+                     connected_friends[ndx].their_id.send(data);
+                  }
+               }
+            }
+
+            var friend_ndx = findIndexOf(data.peer_id);
+            if (friend_ndx >= 0) {
+               connected_friends[friend_ndx].username = data.username;
+            }
+            break;
+         case SELECT_NEW_LEADER:
+            alert("RUN LEADER ALGORITHM");
             break;
          default:
             console.warn("Bad data.type value: " + data.type);
@@ -187,7 +226,7 @@
             type: MESSAGE,
             username: messages[ndx].username,
             message: messages[ndx].message
-         });   
+         });
       }
    }
 
@@ -200,13 +239,15 @@
          .html("<b>Successfully connected to " + connection.peer + "</b>")
       );
 
+      connected_friends.push({their_id:connection, username:connection.peer});
+
       // Tell the new user about all my friends
-      if (leader == my_id) {
+      if (leader.peer_id == my_id) {
          for (var ndx = 0; ndx < connected_friends.length; ndx++) {
-            console.log("Telling the peer " + connection.peer + " all about my old friend " + connected_friends[ndx].peer);
+            console.log("Telling the peer " + connection.peer + " all about my old friend " + connected_friends[ndx].their_id.peer);
             connection.send({
                type: ADD_CONNECTION,
-               new_id: connected_friends[ndx].peer
+               new_id: connected_friends[ndx].their_id.peer
             });
          }
 
@@ -227,23 +268,34 @@
             .addClass("connection-closed-message")
             .html("<b>" + connection.peer + " disconnected </b>")
          );
-         remove_connected_friend(connected_friends.indexOf(connection));
+         remove_connected_friend(findIndexOf(connection));
       });
+   }
 
-      connected_friends.push(connection);
+   function findIndexOf (connection_id)
+   {
+      for (var ndx = 0; ndx < connected_friends.length; ndx++)
+      {
+         if (connected_friends[ndx].their_id.peer == connection_id) {
+            return ndx;
+         }
+      }
+      return -1;
    }
 
    // Remove the specified friend from the connection list
    function remove_connected_friend(index) {
-      console.log("remove_connected_friend at index " + index);
-
-      connected_friends.splice(index, 1);
+      if (index >= 0)
+      {
+         console.log("remove_connected_friend at index " + index);
+         connected_friends.splice(index, 1);
+      }
    }
 
    /* REMOVING CONNECTION FORM, LEADER CONTROLS THIS NOW
    // Stop the default form action (which is to open another page)
       $('#connect-form').submit(false);
-   */
+   
 
    // This is called when the user hits "Connect"
    $("#connect-btn").click(function() {
@@ -263,39 +315,52 @@
 
       return false;
    });
+   */
 
    // Stop the default form action (which is to open another page)
    $('#message-form').submit(false);
 
    // This is called when the user hits "Send"
    $("#send-btn").click(function() {
+      console.log("message to be sent out: " + $("#message-entry").val());
+
       //find proper name
       var name = 0;
       if(handle != "not set") {
-      name = handle;
+         name = handle;
       }
       else {
-      name = my_id;
+         name = my_id;
       }
 
       msg = $("#message-entry").val() ;
 
       if (msg.length > 0) {
          // Send a data message to all peers
-         for (var ndx = 0; ndx < connected_friends.length; ndx++) {
-            connected_friends[ndx].send({
+
+         // check if I am leader
+         if (leader.peer_id == my_id) {
+            // I am leader, send my message to all other friends
+            receive_message({
                type: MESSAGE,
                username: name, 
                message: msg
             });
-         } 
-
-         // Also print my own messages
-         receive_message({
-            type: MESSAGE,
-            username: name, 
-            message: msg
-         });
+         }
+         else {
+            // I am not the leader, send my message to the leader to forward out
+            leader.conn.send({
+               type: MESSAGE,
+               username: name,
+               message: msg
+            });
+            // Also print my own messages - this could result in an out of order message?
+            receive_message({
+               type: MESSAGE,
+               username: name, 
+               message: msg
+            });
+         }
 
          // Clear the message entry field after connection established
          $('#message-entry').val("");
@@ -303,6 +368,9 @@
 
       return false;
    });
+
+   // Stop the default form action (which is to open another page)
+   $('#handle-btn').submit(false);
 
    $("#handle-btn").click(function() {
       //Rename handle and display
@@ -313,6 +381,24 @@
 
          // Clear the message entry field after connection established
          $('#handle-entry').val("");
+
+         if (leader.peer_id == my_id) {
+            receive_message({
+               type: UPDATE_HANDLE,
+               peer_id: my_id,
+               username: handle
+            });
+         }
+         else {
+            // tell the leader that I changed my handle
+            leader.conn.send({
+               type: UPDATE_HANDLE,
+               peer_id: my_id,
+               username: handle
+            });
+         }
+
+         // TODO - Do we want to validate that this handle is unique?
       }
 
       return false;
@@ -328,15 +414,7 @@
    // Alert friends when we're disconnecting
    window.onbeforeunload = function() {
 
-      for (var ndx = 0; ndx < connected_friends.length; ndx++) {
-         connected_friends[ndx].send({
-         type: MESSAGE,
-         username: my_id, 
-         message: "Goodbye everyone, I'm leaving!"});
-      }
-
-      if (leader == my_id) 
-      {
+      if (leader.peer_id == my_id) {
          // update leader on server to be empty to prevent someone who
          // joins from trying to connect to me
          $.ajax({
@@ -344,10 +422,42 @@
             type: 'GET',
             data: {'newID':""},
             success: function(resp) { 
+               for (var ndx = 0; ndx < connected_friends.length; ndx++) {
+                  connected_friends[ndx].their_id.send({
+                     type: MESSAGE,
+                     username: my_id, 
+                     message: "Goodbye everyone, I'm leaving!"
+                  });
+                  connected_friends[ndx].their_id.send({
+                     type: SELECT_NEW_LEADER
+                  });
+               }
+               alert("Leader Election Needs to start");
                // tell everyone to initialize leader election!
             }
          });
       }
+      else {
+         leader.conn.send ({
+            type: MESSAGE,
+            username: my_id, 
+            message: "Goodbye everyone, I'm leaving!"
+         });
+         leader.conn.send ({
+            type: USER_DISCONNECTED,
+            username: my_id
+         });
+      }
+      /*
+      for (var ndx = 0; ndx < connected_friends.length; ndx++) {
+         //connected_friends[ndx].their_id.send({
+         leader.conn.send ({
+            type: MESSAGE,
+            username: my_id, 
+            message: "Goodbye everyone, I'm leaving!"
+         });
+      }
+      */
    }
    </script>
 

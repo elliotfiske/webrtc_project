@@ -108,6 +108,9 @@
    peer.on('open', function(id) {
       $("#my-peer-id").html("My ID is: <br /> <b>" + id + "</b>");
       my_id = id;
+
+      // TODO: smarter graphs
+      graph.addNode(id);
       
       // check if there is a leader
       leader = <?php echo json_encode(checkForLeader()); ?>;
@@ -203,7 +206,7 @@
 
       // TODO: smarter graphs
       graph.addNode(connection.peer);
-      graph.addLink(connection.peer, handle);
+      graph.addLink(connection.peer, my_id);
 
       // Tell the new user about all my friends
       if (leader == my_id)
@@ -324,9 +327,6 @@
          // Clear the message entry field after connection established
          $('#handle-entry').val("");
         }
-      
-        // TODO: smarter graphs
-        graph.addNode(handle);
 
         return false;
    });

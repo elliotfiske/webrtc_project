@@ -10,10 +10,9 @@
 
 <link rel="stylesheet" href="style.css" type="text/css" />
 
-<script type="text/javascript" src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
-<script type="text/javascript" src="https://code.createjs.com/createjs-2015.11.26.min.js"></script>
-<script type="text/javascript" src="https://code.createjs.com/tweenjs-0.6.2.min.js"></script>
-<script type="text/javascript" src="graph.js"></script>
+<script type="text/javascript" src="https://code.jquery.com/jquery-2.2.3.js"></script>
+<script type="text/javascript" src="underscore.js"></script>
+<script src="http://d3js.org/d3.v3.js"></script>
 
 <base target='_blank'>
 
@@ -23,7 +22,7 @@
 
 </head>
 
-<body onload="init();">
+<body>
 
 <div id='container'>
 
@@ -202,6 +201,10 @@
                        .html("<b>Successfully connected to " + connection.peer + "</b>")
                        );
 
+      // TODO: smarter graphs
+      graph.addNode(connection.peer);
+      graph.addLink(connection.peer, handle);
+
       // Tell the new user about all my friends
       if (leader == my_id)
       {
@@ -213,7 +216,7 @@
            });
 
            // Dumb: link all the existing connections together
-           
+           graph.addLink(connection.peer, connected_friends[ndx].peer);
         }
 
         // Send the message log to the newly connected client.
@@ -237,11 +240,6 @@
       });
 
       connected_friends.push(connection);
-
-      // TODO: smarter graphs
-      graph.addNode(connection.peer);
-      graph.addLink(connection.peer, handle);
-
    }
 
    	// Remove the specified friend from the connection list
@@ -350,6 +348,9 @@
       }
    }
 </script>
+
+
+<script type="text/javascript" src="graph.js"></script>
 
 </body>
 </html>

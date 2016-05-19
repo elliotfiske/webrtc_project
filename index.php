@@ -71,7 +71,7 @@
    function checkForLeader() {
       $f_name = "leader_peer_id.txt";
 
-      $f_handle = fopen($f_name, r) or die ("Unable to access leader information!");
+      $f_handle = fopen($f_name, 'r') or die ("Unable to access leader information!");
 
       if (filesize($f_name) > 0) {
          $leader_peer = fread($f_handle, filesize($f_name));
@@ -120,7 +120,7 @@
                 leader = my_id;
                 $("#leader-peer-id").html("The Leader is: <br /> <b>" + leader + "</b>")
             }
-        }); 
+          }); 
       }
       else
       {
@@ -243,9 +243,10 @@
 		connected_friends.splice(index, 1);
 	}
 
+  /* REMOVING CONNECTION FORM, LEADER CONTROLS THIS NOW
    // Stop the default form action (which is to open another page)
    $('#connect-form').submit(false);
-
+  */
    // This is called when the user hits "Connect"
    $("#connect-btn").click(function() {
 
@@ -331,11 +332,26 @@
 
    // Alert friends when we're disconnecting
    window.onbeforeunload = function() {
+
       for (var ndx = 0; ndx < connected_friends.length; ndx++) {
          connected_friends[ndx].send({
                type: MESSAGE,
                username: my_id, 
                message: "Goodbye everyone, I'm leaving!"});
+      }
+
+      if (leader == my_id) 
+      {
+        // update leader on server to be empty to prevent someone who
+        // joins from trying to connect to me
+        $.ajax({
+            url: 'updateLeader.php',
+            type: 'GET',
+            data: {'newID':""},
+            success: function(resp) { 
+              // tell everyone to initialize leader election!
+            }
+          });
       }
    }
 </script>

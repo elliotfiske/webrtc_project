@@ -94,6 +94,7 @@
    var USER_DISCONNECTED = 2;
    var UPDATE_HANDLE = 3;
    var SELECT_NEW_LEADER = 4;
+   var NEW_LEADER_ANNOUCEMENT = 5;
 
    // Stores the incoming connections
    var connected_friends = [];
@@ -210,7 +211,21 @@
             }
             break;
          case SELECT_NEW_LEADER:
-            alert("RUN LEADER ALGORITHM");
+            console.log("Running leader election");
+            leader_election();
+            break;
+         case NEW_LEADER_ANNOUCEMENT:
+            alert("New Leader going to be: " + data.peer_id);
+            if (leader.peer_id == data.peer_id) {
+               var leader_ndx = findIndexOf(data.peer_id);
+               if (leader_ndx >= 0) {
+                  leader.conn = connected_friends[leader_ndx].their_id;
+                  $("#leader-peer-id").html("The Leader is: <br /> <b>" + leader.peer_id + "</b>")
+               }
+               else {
+                  alert("ERROR! Leader not one of my friends?!");
+               }
+            }
             break;
          default:
             console.warn("Bad data.type value: " + data.type);
@@ -268,7 +283,23 @@
             .addClass("connection-closed-message")
             .html("<b>" + connection.peer + " disconnected </b>")
          );
-         remove_connected_friend(findIndexOf(connection));
+         console.log("Peer disconnected: " + connection.peer);
+         console.log("Leader is/was: " + leader.peer_id);
+         remove_connected_friend(findIndexOf(connection.peer));
+         if (connection.peer == leader.peer_id)
+         {
+            // make sure to clear out the leader file
+            $.ajax({
+               url: 'updateLeader.php',
+               type: 'GET',
+               data: {'newID':""},
+               success: function(resp) {
+                  receive_message({
+                     type: SELECT_NEW_LEADER
+                  });
+               }
+            });
+         }
       });
    }
 
@@ -428,12 +459,12 @@
                      username: my_id, 
                      message: "Goodbye everyone, I'm leaving!"
                   });
+                  /*
                   connected_friends[ndx].their_id.send({
                      type: SELECT_NEW_LEADER
                   });
+                  */
                }
-               alert("Leader Election Needs to start");
-               // tell everyone to initialize leader election!
             }
          });
       }
@@ -459,6 +490,48 @@
       }
       */
    }
+
+   function leader_election()
+   {
+      // find the peer with the greatest id
+      var next_leader = my_id;
+      console.log("Running Leader Election");
+
+      for (var ndx = 0; ndx < connected_friends.length; ndx++) {
+         console.log("comparng next_leader (" + next_leader + ") to connected_friend: (" + connected_friends[ndx].their_id.peer + ")");
+         if (next_leader < connected_friends[ndx].their_id.peer)
+         {
+            next_leader = connected_friends[ndx].their_id.peer;
+         }
+      }
+
+      console.log("I think the next leader should be: " + next_leader);
+      
+      if (next_leader == my_id) {
+         $.ajax({
+            url: 'updateLeader.php',
+            type: 'GET',
+            data: {'newID':my_id},
+            success: function(resp) {           
+               // send a new leader annoucement packet to everyone
+               for (var ndx = 0; ndx < connected_friends.length; ndx ++) {
+                  console.log("Telling my friend " + connected_friends[ndx].their_id.peer + " that I am their new leader");
+                  connected_friends[ndx].their_id.send({
+                     type: NEW_LEADER_ANNOUCEMENT,
+                     peer_id: my_id
+                  });
+               }
+            }
+         });
+         // wait for leader ACKS?
+         leader.peer_id = my_id;
+         $("#leader-peer-id").html("The Leader is: <br /> <b>" + leader.peer_id + "</b>")
+      }
+      else {
+         leader.peer_id = next_leader;
+      }
+   }
+
    </script>
 
 </body>

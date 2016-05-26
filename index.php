@@ -237,6 +237,7 @@
             .html("<b>" + connection.peer + " disconnected </b>")
          );
          remove_connected_friend(connected_friends.indexOf(connection));
+         graph.removeNode(connection.peer);
       });
 
       connected_friends.push(connection);

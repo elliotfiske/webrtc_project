@@ -217,7 +217,9 @@
          case NEW_LEADER_ANNOUCEMENT:
             alert("New Leader going to be: " + data.peer_id);
             if (leader.peer_id == data.peer_id) {
+               console.log("I agree that the leader should be you (" + data.peer_id + ")");
                var leader_ndx = findIndexOf(data.peer_id);
+               console.log("Your in my connected friends at position: " + leader_ndx);
                if (leader_ndx >= 0) {
                   leader.conn = connected_friends[leader_ndx].their_id;
                   $("#leader-peer-id").html("The Leader is: <br /> <b>" + leader.peer_id + "</b>")
@@ -276,6 +278,25 @@
          receive_message(data);
       });
 
+      // Peer was somehow disconnected, try to re-establish connection if possible
+      connection.on('disconnected', function() {
+         alert("Connection (" + connection.peer + ") disconnected");
+         // try to reconnect
+         consloe.log("Trying to reconnect to: " + connection.peer);
+         if (connection.disconnected && !connection.destroyed) {
+            console.log("They were disconnected but not destroyed, attempting to reconnect now");
+            connection.reconnect();
+         }
+         else {
+            console.log("All hope is lost for them....");
+         }
+      });
+
+      connection.on('error', function(err) {
+         alert("Error occurred!");
+         console.log(err);
+      });
+
       // Peer died! Let the user know.
       connection.on('close', function() {
          $("#log").append(
@@ -289,6 +310,7 @@
          if (connection.peer == leader.peer_id)
          {
             // make sure to clear out the leader file
+            /*
             $.ajax({
                url: 'updateLeader.php',
                type: 'GET',
@@ -298,6 +320,10 @@
                      type: SELECT_NEW_LEADER
                   });
                }
+            });
+            */
+            receive_message({
+               type: SELECT_NEW_LEADER
             });
          }
       });

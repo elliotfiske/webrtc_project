@@ -7,10 +7,12 @@
    <meta name='keywords' content='WebRTC, HTML5, JavaScript' />
    <meta name='description' content='WebRTC Reference App' />
    <meta name='viewport' content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1'>
-   <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
-   <script type="text/javascript" src="https://code.createjs.com/createjs-2015.11.26.min.js"></script>
-   <script type="text/javascript" src="https://code.createjs.com/tweenjs-0.6.2.min.js"></script>
-   <script type="text/javascript" src="graph.js"></script>
+
+   <link rel="stylesheet" href="style.css" type="text/css" />
+
+   <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.3.js"></script>
+   <script type="text/javascript" src="underscore.js"></script>
+   <script src="http://d3js.org/d3.v3.js"></script>
 
    <base target='_blank'>
 
@@ -20,7 +22,7 @@
 
 </head>
 
-<body onload="init();">
+<body>
 
    <div id='container'>
 
@@ -62,7 +64,7 @@
 
    </div>
 
-   <canvas id="graph" width="600" height="500" style="width: 600px; height: 500px;"></canvas>
+   <div id="graph"></div>
 
    <script src="http://cdn.peerjs.com/0.3/peer.js"></script>
 
@@ -111,6 +113,9 @@
    peer.on('open', function(id) {
       $("#my-peer-id").html("My ID is: <br /> <b>" + id + "</b>");
       my_id = id;
+
+      // TODO: smarter graphs
+      graph.addNode(id);
 
       // check if there is a leader
       leader.peer_id = <?php echo json_encode(checkForLeader()); ?>;
@@ -256,6 +261,10 @@
          .html("<b>Successfully connected to " + connection.peer + "</b>")
       );
 
+      // TODO: smarter graphs
+      graph.addNode(connection.peer);
+      graph.addLink(connection.peer, my_id);
+
       connected_friends.push({their_id:connection, username:connection.peer});
 
       // Tell the new user about all my friends
@@ -307,6 +316,7 @@
          console.log("Peer disconnected: " + connection.peer);
          console.log("Leader is/was: " + leader.peer_id);
          remove_connected_friend(findIndexOf(connection.peer));
+         graph.removeNode(connection.peer);
          if (connection.peer == leader.peer_id)
          {
             // make sure to clear out the leader file
@@ -559,6 +569,9 @@
    }
 
    </script>
+
+
+<script type="text/javascript" src="graph.js"></script>
 
 </body>
 </html>

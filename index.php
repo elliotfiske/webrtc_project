@@ -311,6 +311,11 @@
             });
          }
       });
+
+      connection.on('error', function(err) {
+         window.alert("PEER JS ERROR :(")
+         window.alert(err.type);
+      })
    }
 
    function findIndexOf (connection_id)

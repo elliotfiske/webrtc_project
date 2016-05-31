@@ -129,27 +129,30 @@ $(document).ready(function() {
 
 var GRAPH_CLICK_DELAY = 300, graph_node_clicks = 0, graph_node_timer = null;
 function update_click_handlers() {
-    $(".node").on("click", function(e){
-        graph_node_clicks++;  //count graph_node_clicks
-
-        if(graph_node_clicks === 1) {
-            var that = $(this);
-
-            graph_node_timer = setTimeout(function() {
-                graph_node_clicks = 0;             //after action performed, reset counter
-                ask_for_sound(that.find("text").html(), false);
-            }, GRAPH_CLICK_DELAY);
-
-        } else {
-            clearTimeout(graph_node_timer);    //prevent single-click action
-            graph_node_clicks = 0;             //after action performed, reset counter
-            ask_for_sound($(this).find("text").html(), true);
-        }
-
-    })
-    .on("dblclick", function(e){
-        e.preventDefault();  //cancel system double-click event
-    });
+    // $(".node").on("click", function(e){
+    //     graph_node_clicks++;  //count graph_node_clicks
+    //
+    //     if(graph_node_clicks === 1) {
+    //         var that = $(this);
+    //
+    //         graph_node_timer = setTimeout(function() {
+    //             graph_node_clicks = 0;             //after action performed, reset counter
+    //             ask_for_sound(that.find("text").html(), false);
+    //         }, GRAPH_CLICK_DELAY);
+    //
+    //     } else {
+    //         clearTimeout(graph_node_timer);    //prevent single-click action
+    //         graph_node_clicks = 0;             //after action performed, reset counter
+    //         ask_for_sound($(this).find("text").html(), true);
+    //     }
+    //
+    // })
+    // .on("dblclick", function(e){
+    //     e.preventDefault();  //cancel system double-click event
+    // });
+    $(".node").on("click", function(e) {
+        ask_for_sound($(this).find("text").html(), true);
+    }
 }
 
 function update_handle(other_id, new_handle) {

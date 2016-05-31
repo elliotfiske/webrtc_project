@@ -23,6 +23,10 @@
 </head>
 
 <body>
+   <audio id="find-me" controls style="display: none;">
+      <source src="ping.wav" type="audio/wav">
+      Your browser does not support the audio element.
+   </audio>
 
    <div id='container'>
 
@@ -34,15 +38,6 @@
 
       <br>
       <br>
-
-      <!-- REMOVING CONNECT FORM AS LEADER HANDLES THIS NOW
-      <form id="connect-form">
-         Enter a Peer ID to connect to: <input type="text" name="peer-id" id="id-entry"><br>
-         <input id="connect-btn" type="submit" value="Connect!">
-      </form>
-      <br>
-      <br>
-      -->      
 
       <form id="name-form">
          Enter a handle: <input type="text" name="handle" id="handle-entry"><br>
@@ -97,6 +92,7 @@
    var UPDATE_HANDLE = 3;
    var SELECT_NEW_LEADER = 4;
    var NEW_LEADER_ANNOUCEMENT = 5;
+   var PLAY_SOUND = 6; // Please play a sound/show an alert so I can find your tab :O
 
    // Stores the incoming connections
    var connected_friends = [];
@@ -233,6 +229,12 @@
                   alert("ERROR! Leader not one of my friends?!");
                }
             }
+            break;
+         case PLAY_SOUND:
+            if (data.alert) {
+               window.alert("Hello! It's me, " + my_id);
+            }
+            $("#find-me").get(0).play();
             break;
          default:
             console.warn("Bad data.type value: " + data.type);
@@ -570,6 +572,18 @@
       }
       else {
          leader.peer_id = next_leader;
+      }
+   }
+
+   // When we click a node, ask it to play a sound!
+   function ask_for_sound(other_id, show_alert) {
+      for (var ndx = 0; ndx < connected_friends.length; ndx++) {
+         if (connected_friends[ndx].their_id.peer == other_id) {
+            connected_friends[ndx].their_id.send({
+               type: PLAY_SOUND,
+               alert: show_alert
+            });
+         }
       }
    }
 

@@ -5,6 +5,7 @@ function myGraph(el) {
     this.addNode = function (id) {
         nodes.push({"id":id});
         update();
+        update_click_handlers();
     }
 
     this.removeNode = function (id) {
@@ -113,3 +114,44 @@ function myGraph(el) {
 }
 
 graph = new myGraph("#graph");
+
+// You can click nodes to have stuff happen!
+$(document).ready(function() {
+    update_click_handlers();
+});
+
+function update_click_handlers() {
+    $(".node").on("click", function(e){
+
+        clicks++;  //count clicks
+
+        if(clicks === 1) {
+
+            timer = setTimeout(function() {
+
+                alert("Single Click");  //perform single-click action    
+                clicks = 0;             //after action performed, reset counter
+
+            }, DELAY);
+
+        } else {
+
+            clearTimeout(timer);    //prevent single-click action
+            alert("Double Click");  //perform double-click action
+            clicks = 0;             //after action performed, reset counter
+        }
+
+    })
+    .on("dblclick", function(e){
+        e.preventDefault();  //cancel system double-click event
+    });
+
+
+    $(".node").click(function() {
+        ask_for_sound($(this).find("text").html(), false);
+    });
+
+    $(".node").dblclick(function() {
+        ask_for_sound($(this).find("text").html(), true);
+    });
+}

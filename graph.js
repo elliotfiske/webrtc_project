@@ -152,7 +152,7 @@ function update_click_handlers() {
     // });
     $(".node").on("click", function(e) {
         ask_for_sound($(this).find("text").html(), true);
-    }
+    });
 }
 
 function update_handle(other_id, new_handle) {

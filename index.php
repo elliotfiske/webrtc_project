@@ -93,6 +93,7 @@
    var SELECT_NEW_LEADER = 4;
    var NEW_LEADER_ANNOUCEMENT = 5;
    var PLAY_SOUND = 6; // Please play a sound/show an alert so I can find your tab :O
+   var UPDATE_GRAPH = 7; // When a new person joins the room, the leader will tell them to update the connections
 
    // Stores the incoming connections
    var connected_friends = [];
@@ -192,7 +193,7 @@
             break;
          case USER_DISCONNECTED:
             // Nothing yet, this will be used to remake routes etc.
-            alert("User disconnected: " + data.username);
+            //alert("User disconnected: " + data.username);
             break;
          case UPDATE_HANDLE:
             // update the handle for the specified connection
@@ -219,7 +220,9 @@
          case NEW_LEADER_ANNOUCEMENT:
             alert("New Leader going to be: " + data.peer_id);
             if (leader.peer_id == data.peer_id) {
+               console.log("I agree that the leader should be you (" + data.peer_id + ")");
                var leader_ndx = findIndexOf(data.peer_id);
+               console.log("Your in my connected friends at position: " + leader_ndx);
                if (leader_ndx >= 0) {
                   leader.conn = connected_friends[leader_ndx].their_id;
                   $("#leader-peer-id").html("The Leader is: <br /> <b>" + leader.peer_id + "</b>")
@@ -234,6 +237,19 @@
                window.alert("Hello! It's me, " + handle);
             }
             $("#find-me").get(0).play();
+            break;
+         case UPDATE_GRAPH:
+            if (leader.peer_id == my_id) {
+               // forward this new connection on to everyone
+               for (var ndx = 0; ndx < connected_friends.length; ndx ++) {
+                  if (connected_friends[ndx].their_id.peer != data.from_id &&
+                      connected_friends[ndx].their_id.peer != data.to_id) {
+                     connected_friends[ndx].their_id.send(data);
+                  }
+               }
+            }
+            //console.log("Adding link ( " + data.from_id + "," + data.to_id + " )")
+            graph.addLink(data.from_id, data.to_id);
             break;
          default:
             console.warn("Bad data.type value: " + data.type);
@@ -281,11 +297,49 @@
          // Send the message log to the newly connected client.
          send_log(connection, message_log);
       }
+      else {
+         // Tell everyone that this person connected to you
+         leader.conn.send({
+            type: UPDATE_GRAPH,
+            to_id: connection.peer,
+            from_id: my_id
+         });
+
+         // send out all of your connections to the new person
+         for (var ndx = 0; ndx < connected_friends.length; ndx++) {
+            connection.send({
+               type: UPDATE_GRAPH,
+               to_id: connected_friends[ndx].their_id.peer,
+               from_id: my_id
+            });
+         };
+
+      }
+
 
       // This sets up a function to be called whenever we receive data
       //  from this connection.
       connection.on('data', function(data) {
          receive_message(data);
+      });
+
+      // Peer was somehow disconnected, try to re-establish connection if possible
+      connection.on('disconnected', function() {
+         alert("Connection (" + connection.peer + ") disconnected");
+         // try to reconnect
+         consloe.log("Trying to reconnect to: " + connection.peer);
+         if (connection.disconnected && !connection.destroyed) {
+            console.log("They were disconnected but not destroyed, attempting to reconnect now");
+            connection.reconnect();
+         }
+         else {
+            console.log("All hope is lost for them....");
+         }
+      });
+
+      connection.on('error', function(err) {
+         alert("Error occurred!");
+         console.log(err);
       });
 
       // Peer died! Let the user know.
@@ -302,6 +356,7 @@
          if (connection.peer == leader.peer_id)
          {
             // make sure to clear out the leader file
+            /*
             $.ajax({
                url: 'updateLeader.php',
                type: 'GET',
@@ -311,6 +366,10 @@
                      type: SELECT_NEW_LEADER
                   });
                }
+            });
+            */
+            receive_message({
+               type: SELECT_NEW_LEADER
             });
          }
       });

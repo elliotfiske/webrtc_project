@@ -93,6 +93,7 @@
    var SELECT_NEW_LEADER = 4;
    var NEW_LEADER_ANNOUCEMENT = 5;
    var PLAY_SOUND = 6; // Please play a sound/show an alert so I can find your tab :O
+   var UPDATE_GRAPH = 7; // When a new person joins the room, the leader will tell them to update the connections
 
    // Stores the incoming connections
    var connected_friends = [];
@@ -236,6 +237,19 @@
             }
             $("#find-me").get(0).play();
             break;
+         case UPDATE_GRAPH:
+            if (leader.peer_id == my_id) {
+               // forward this new connection on to everyone
+               for (var ndx = 0; ndx < connected_friends.length; ndx ++) {
+                  if (connected_friends[ndx].their_id.peer != data.from_id &&
+                      connected_friends[ndx].their_id.peer != data.to_id) {
+                     connected_friends[ndx].their_id.send(data);
+                  }
+               }
+            }
+            //console.log("Adding link ( " + data.from_id + "," + data.to_id + " )")
+            graph.addLink(data.from_id, data.to_id);
+            break;
          default:
             console.warn("Bad data.type value: " + data.type);
             break;   
@@ -282,6 +296,25 @@
          // Send the message log to the newly connected client.
          send_log(connection, message_log);
       }
+      else {
+         // Tell everyone that this person connected to you
+         leader.conn.send({
+            type: UPDATE_GRAPH,
+            to_id: connection.peer,
+            from_id: my_id
+         });
+
+         // send out all of your connections to the new person
+         for (var ndx = 0; ndx < connected_friends.length; ndx++) {
+            connection.send({
+               type: UPDATE_GRAPH,
+               to_id: connected_friends[ndx].their_id.peer,
+               from_id: my_id
+            });
+         };
+         
+      }
+      
 
       // This sets up a function to be called whenever we receive data
       //  from this connection.

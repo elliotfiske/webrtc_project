@@ -192,7 +192,7 @@
             break;
          case USER_DISCONNECTED:
             // Nothing yet, this will be used to remake routes etc.
-            alert("User disconnected: " + data.username);
+            //alert("User disconnected: " + data.username);
             break;
          case UPDATE_HANDLE:
             // update the handle for the specified connection
@@ -499,7 +499,7 @@
                for (var ndx = 0; ndx < connected_friends.length; ndx++) {
                   connected_friends[ndx].their_id.send({
                      type: MESSAGE,
-                     username: my_id, 
+                     username: handle, 
                      message: "Goodbye everyone, I'm leaving!"
                   });
                   /*
@@ -514,7 +514,7 @@
       else {
          leader.conn.send ({
             type: MESSAGE,
-            username: my_id, 
+            username: handle, 
             message: "Goodbye everyone, I'm leaving!"
          });
          leader.conn.send ({

@@ -83,16 +83,23 @@ function myGraph(el) {
         nodeEnter.append("image")
             .attr("class", "circle")
             .attr("xlink:href", "https://github.com/favicon.ico")
-            .attr("x", "-8px")
-            .attr("y", "-8px")
-            .attr("width", "16px")
-            .attr("height", "16px");
+            .attr("x", "-16px")
+            .attr("y", "-16px")
+            .attr("width", "32px")
+            .attr("height", "32px");
 
         nodeEnter.append("text")
             .attr("class", "nodetext")
-            .attr("dx", 12)
-            .attr("dy", ".35em")
+            .attr("dx", 18)
+            .attr("dy", ".75em")
             .text(function(d) {return d.id});
+
+        nodeEnter.append("text")
+            .attr("class", "handletext")
+            .attr("id", function(d) {return d.id + "-handle"})
+            .attr("dx", 18)
+            .attr("dy", "-.1em")
+            .text(function(d) {return "<Handle not set>"});
 
         node.exit().remove();
 
@@ -120,38 +127,31 @@ $(document).ready(function() {
     update_click_handlers();
 });
 
+var GRAPH_CLICK_DELAY = 300, graph_node_clicks = 0, graph_node_timer = null;
 function update_click_handlers() {
     $(".node").on("click", function(e){
+        graph_node_clicks++;  //count graph_node_clicks
 
-        clicks++;  //count clicks
+        if(graph_node_clicks === 1) {
+            var that = $(this);
 
-        if(clicks === 1) {
-
-            timer = setTimeout(function() {
-
-                alert("Single Click");  //perform single-click action    
-                clicks = 0;             //after action performed, reset counter
-
-            }, DELAY);
+            graph_node_timer = setTimeout(function() {
+                graph_node_clicks = 0;             //after action performed, reset counter
+                ask_for_sound(that.find("text").html(), false);
+            }, GRAPH_CLICK_DELAY);
 
         } else {
-
-            clearTimeout(timer);    //prevent single-click action
-            alert("Double Click");  //perform double-click action
-            clicks = 0;             //after action performed, reset counter
+            clearTimeout(graph_node_timer);    //prevent single-click action
+            graph_node_clicks = 0;             //after action performed, reset counter
+            ask_for_sound($(this).find("text").html(), true);
         }
 
     })
     .on("dblclick", function(e){
         e.preventDefault();  //cancel system double-click event
     });
+}
 
-
-    $(".node").click(function() {
-        ask_for_sound($(this).find("text").html(), false);
-    });
-
-    $(".node").dblclick(function() {
-        ask_for_sound($(this).find("text").html(), true);
-    });
+function update_handle(other_id, new_handle) {
+    $("#" + other_id + "-handle").html(new_handle);
 }

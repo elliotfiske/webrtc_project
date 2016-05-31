@@ -65,7 +65,7 @@
 
    <script type="text/javascript">var my_id = "not set";</script>
 
-   <?php 
+   <?php
       function checkForLeader() {
          $f_name = "leader_peer_id.txt";
 
@@ -126,7 +126,7 @@
                leader.peer_id = my_id;
                $("#leader-peer-id").html("The Leader is: <br /> <b>" + leader.peer_id + "</b>")
             }
-         }); 
+         });
       }
       else
       {
@@ -175,7 +175,7 @@
                   $('<div/>')
                   .addClass("message")
                   .html("<b>me: </b>" + data.message)
-               ); 
+               );
             }
             else {
                $("#log").append(
@@ -210,6 +210,7 @@
             if (friend_ndx >= 0) {
                connected_friends[friend_ndx].username = data.username;
             }
+            update_handle(data.peer_id, data.username);
             break;
          case SELECT_NEW_LEADER:
             console.log("Running leader election");
@@ -230,13 +231,13 @@
             break;
          case PLAY_SOUND:
             if (data.alert) {
-               window.alert("Hello! It's me, " + my_id);
+               window.alert("Hello! It's me, " + handle);
             }
             $("#find-me").get(0).play();
             break;
          default:
             console.warn("Bad data.type value: " + data.type);
-            break;   
+            break;
       }
    }
 
@@ -340,31 +341,6 @@
       }
    }
 
-   /* REMOVING CONNECTION FORM, LEADER CONTROLS THIS NOW
-   // Stop the default form action (which is to open another page)
-      $('#connect-form').submit(false);
-   
-
-   // This is called when the user hits "Connect"
-   $("#connect-btn").click(function() {
-      conn_id = $("#id-entry").val();
-
-      if (conn_id.length > 0) {
-         // Tries to connect to a new friend with the peer ID "other_id"
-         var new_connection = peer.connect(conn_id);
-
-         new_connection.on('open', function() {
-            new_connection_established(new_connection);
-         });
-
-         // Clear the id field after connection established
-         $('#id-entry').val("");
-      }
-
-      return false;
-   });
-   */
-
    // Stop the default form action (which is to open another page)
    $('#message-form').submit(false);
 
@@ -391,7 +367,7 @@
             // I am leader, send my message to all other friends
             receive_message({
                type: MESSAGE,
-               username: name, 
+               username: name,
                message: msg
             });
          }
@@ -405,7 +381,7 @@
             // Also print my own messages - this could result in an out of order message?
             receive_message({
                type: MESSAGE,
-               username: name, 
+               username: name,
                message: msg
             });
          }
@@ -449,11 +425,13 @@
          // TODO - Do we want to validate that this handle is unique?
       }
 
+      update_handle(my_id, handle);
+
       return false;
    });
 
    // Listen for new peers connecting TO me
-   peer.on('connection', function(incoming_connection) { 
+   peer.on('connection', function(incoming_connection) {
       incoming_connection.on('open', function() {
          new_connection_established(incoming_connection);
       });
@@ -469,11 +447,11 @@
             url: 'updateLeader.php',
             type: 'GET',
             data: {'newID':""},
-            success: function(resp) { 
+            success: function(resp) {
                for (var ndx = 0; ndx < connected_friends.length; ndx++) {
                   connected_friends[ndx].their_id.send({
                      type: MESSAGE,
-                     username: my_id, 
+                     username: my_id,
                      message: "Goodbye everyone, I'm leaving!"
                   });
                   /*
@@ -488,7 +466,7 @@
       else {
          leader.conn.send ({
             type: MESSAGE,
-            username: my_id, 
+            username: my_id,
             message: "Goodbye everyone, I'm leaving!"
          });
          leader.conn.send ({
@@ -496,16 +474,6 @@
             username: my_id
          });
       }
-      /*
-      for (var ndx = 0; ndx < connected_friends.length; ndx++) {
-         //connected_friends[ndx].their_id.send({
-         leader.conn.send ({
-            type: MESSAGE,
-            username: my_id, 
-            message: "Goodbye everyone, I'm leaving!"
-         });
-      }
-      */
    }
 
    function leader_election()
@@ -523,13 +491,13 @@
       }
 
       console.log("I think the next leader should be: " + next_leader);
-      
+
       if (next_leader == my_id) {
          $.ajax({
             url: 'updateLeader.php',
             type: 'GET',
             data: {'newID':my_id},
-            success: function(resp) {           
+            success: function(resp) {
                // send a new leader annoucement packet to everyone
                for (var ndx = 0; ndx < connected_friends.length; ndx ++) {
                   console.log("Telling my friend " + connected_friends[ndx].their_id.peer + " that I am their new leader");

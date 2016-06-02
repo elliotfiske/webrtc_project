@@ -12,6 +12,7 @@
 
    <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.3.js"></script>
    <script type="text/javascript" src="underscore.js"></script>
+   <script type="text/javascript" src="leader_coup.js"></script>
    <script src="http://d3js.org/d3.v3.js"></script>
 
    <base target='_blank'>
@@ -104,7 +105,7 @@
    var my_id = "not set";
    var handle = "not set";
    var leader = {peer_id: "not set",
-                 conn: "not set"};
+                 conn: null};
 
    // Open the connection to the PeerJS servers, and update the label
    peer.on('open', function(id) {
@@ -118,6 +119,7 @@
       leader.peer_id = <?php echo json_encode(checkForLeader()); ?>;
 
       if (leader.peer_id.length == 0) {
+         window.alert("No leader found, ASSUMING DIRECT CONTROL");
          // there is no leader, make me the leader!
          $.ajax({
             url: 'updateLeader.php',
@@ -132,27 +134,52 @@
       else
       {
          $("#leader-peer-id").html("The Leader is: <br /> <b>" + leader.peer_id + "</b>");
-         leader.conn = leader_told_me_to_connect(leader.peer_id);
+         leader_told_me_to_connect(leader.peer_id, function(success, result) {
+            if (success) {
+               leader.conn = result;
+            }
+            else {
+               // Leader connection timed out
+               if (leader.conn === null) {
+                  console.warn("Dead leader detected!!! Attempting to make myself leader!")
+                  make_myself_leader(leader.peer_id);
+               }
+            }
+         });
       }
    });
 
    // Leader told me to connect!
-   function leader_told_me_to_connect(new_peer_id) {
+   function leader_told_me_to_connect(new_peer_id, result_callback) {
+      result_callback = result_callback || function(){};
+
       // Verify I'm not already connected
       for (var ndx = 0; ndx < connected_friends.length; ndx++) {
          if (connected_friends[ndx].their_id.peer == new_peer_id ||
           my_id == new_peer_id) {
-            return connected_friends[ndx].their_id;
+            result_callback(connected_friends[ndx]);
+            return;
          }
       }
 
-      var new_connection = peer.connect(new_peer_id);
+      var new_connection = peer.connect(new_peer_id, {reliable: true});
 
       new_connection.on('open', function() {
+         result_callback(true, new_connection);
          new_connection_established(new_connection);
+         console.log("Nice, found the leader and he's alive!")
       });
 
-      return new_connection;
+      new_connection.on('error', function(err) {
+         console.warn("HEY: this FINALLY worked. Probably too late now tho :/");
+      });
+
+      // Wait and see if we successfully connected to the leader.
+      setTimeout(function() {
+         if (!new_connection.open) {
+            result_callback(false, null);
+         }
+      }, 3000);
    }
 
    function receive_message(data) {
@@ -194,6 +221,8 @@
          case USER_DISCONNECTED:
             // Nothing yet, this will be used to remake routes etc.
             //alert("User disconnected: " + data.username);
+            peer_disconnected(data.disconnected_id);
+
             break;
          case UPDATE_HANDLE:
             // update the handle for the specified connection
@@ -344,16 +373,29 @@
 
       // Peer died! Let the user know.
       connection.on('close', function() {
+         peer_disconnected(connection.peer);
+      });
+
+      connection.on('error', function(err) {
+         window.alert("PEER JS ERROR :(")
+         window.alert(err.type);
+      })
+   }
+
+   function peer_disconnected(disconnected_id) {
+      var old_index_in_array = findIndexOf(disconnected_id);
+
+      if (old_index_in_array >= 0) {
          $("#log").append(
             $('<div/>')
             .addClass("connection-closed-message")
-            .html("<b>" + connection.peer + " disconnected </b>")
+            .html("<b>" + disconnected_id + " disconnected </b>")
          );
-         console.log("Peer disconnected: " + connection.peer);
+         console.log("Peer disconnected: " + disconnected_id);
          console.log("Leader is/was: " + leader.peer_id);
-         remove_connected_friend(findIndexOf(connection.peer));
-         graph.removeNode(connection.peer);
-         if (connection.peer == leader.peer_id)
+         remove_connected_friend(old_index_in_array);
+         graph.removeNode(disconnected_id);
+         if (disconnected_id == leader.peer_id)
          {
             // make sure to clear out the leader file
             /*
@@ -372,12 +414,7 @@
                type: SELECT_NEW_LEADER
             });
          }
-      });
-
-      connection.on('error', function(err) {
-         window.alert("PEER JS ERROR :(")
-         window.alert(err.type);
-      })
+      }
    }
 
    function findIndexOf (connection_id)
@@ -508,10 +545,9 @@
             data: {'newID':""},
             success: function(resp) {
                for (var ndx = 0; ndx < connected_friends.length; ndx++) {
-                  connected_friends[ndx].their_id.send({
-                     type: MESSAGE,
-                     username: my_id,
-                     message: "Goodbye everyone, I'm leaving!"
+                  leader.conn.send ({
+                     type: USER_DISCONNECTED,
+                     disconnected_id: my_id
                   });
                   /*
                   connected_friends[ndx].their_id.send({
@@ -524,13 +560,8 @@
       }
       else {
          leader.conn.send ({
-            type: MESSAGE,
-            username: my_id,
-            message: "Goodbye everyone, I'm leaving!"
-         });
-         leader.conn.send ({
             type: USER_DISCONNECTED,
-            username: my_id
+            disconnected_id: my_id
          });
       }
    }

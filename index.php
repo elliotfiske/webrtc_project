@@ -107,6 +107,10 @@
    var leader = {peer_id: "not set",
                  conn: null};
 
+   function getHandle() {
+      return handle;
+   }
+
    // Open the connection to the PeerJS servers, and update the label
    peer.on('open', function(id) {
       $("#my-peer-id").html("My ID is: <br /> <b>" + id + "</b>");
@@ -134,7 +138,7 @@
       else
       {
          $("#leader-peer-id").html("The Leader is: <br /> <b>" + leader.peer_id + "</b>");
-         leader_told_me_to_connect(leader.peer_id, function(success, result) {
+         leader_told_me_to_connect(leader.peer_id, "Leader", function(success, result) {
             if (success) {
                leader.conn = result;
             }
@@ -150,7 +154,7 @@
    });
 
    // Leader told me to connect!
-   function leader_told_me_to_connect(new_peer_id, result_callback) {
+   function leader_told_me_to_connect(new_peer_id, new_handle, result_callback) {
       result_callback = result_callback || function(){};
 
       // Verify I'm not already connected
@@ -166,7 +170,7 @@
 
       new_connection.on('open', function() {
          result_callback(true, new_connection);
-         new_connection_established(new_connection);
+         new_connection_established(new_connection, new_handle);
          console.log("Nice, found the leader and he's alive!")
       });
 
@@ -216,7 +220,7 @@
             break;
          case ADD_CONNECTION:
             // The leader has told us to add a new friend. DO IT
-            leader_told_me_to_connect(data.new_id)
+            leader_told_me_to_connect(data.new_id, data.username);
             break;
          case USER_DISCONNECTED:
             // Nothing yet, this will be used to remake routes etc.
@@ -236,10 +240,14 @@
                }
             }
 
+            console.log("Finding connected friend with peer: " + data.peer_id);
             var friend_ndx = findIndexOf(data.peer_id);
+            console.log("Found connected friend with peer: " + data.peer_id + " at index: " + friend_ndx);
             if (friend_ndx >= 0) {
+               console.log("changing username from: " + connected_friends[friend_ndx].username + ", to: " + data.username);
                connected_friends[friend_ndx].username = data.username;
             }
+
             update_handle(data.peer_id, data.username);
             break;
          case SELECT_NEW_LEADER:
@@ -300,7 +308,9 @@
 
 
    // Called when I connect to someone, or when someone connects to me!
-   function new_connection_established(connection) {
+   function new_connection_established(connection, handle) {
+      var my_handle = getHandle();
+
       $("#log").append(
          $('<div/>')
          .addClass("new-connection-message")
@@ -311,7 +321,7 @@
       graph.addNode(connection.peer);
       graph.addLink(connection.peer, my_id);
 
-      connected_friends.push({their_id:connection, username:connection.peer});
+      connected_friends.push({their_id:connection, username:handle});
 
       // Tell the new user about all my friends
       if (leader.peer_id == my_id) {
@@ -319,7 +329,8 @@
             console.log("Telling the peer " + connection.peer + " all about my old friend " + connected_friends[ndx].their_id.peer);
             connection.send({
                type: ADD_CONNECTION,
-               new_id: connected_friends[ndx].their_id.peer
+               new_id: connected_friends[ndx].their_id.peer,
+               new_handle: connected_friends[ndx].username
             });
          }
 
@@ -342,10 +353,17 @@
                from_id: my_id
             });
          };
-
       }
 
-
+      //alert("Letting my new friend " + connection.peer + " know that my handle is: " + my_handle);
+      if (my_handle != "not set")
+      {
+         connection.send({
+            type: UPDATE_HANDLE,
+            peer_id: my_id,
+            username: my_handle
+         });
+      }
       // This sets up a function to be called whenever we receive data
       //  from this connection.
       connection.on('data', function(data) {
@@ -447,6 +465,7 @@
       //find proper name
       var name = 0;
       if(handle != "not set") {
+         //alert("my handle is: " + handle);
          name = handle;
       }
       else {
@@ -517,8 +536,6 @@
                username: handle
             });
          }
-
-         // TODO - Do we want to validate that this handle is unique?
       }
 
       update_handle(my_id, handle);

@@ -150,7 +150,7 @@ function update_click_handlers() {
     // .on("dblclick", function(e){
     //     e.preventDefault();  //cancel system double-click event
     // });
-    $(".node").on("click", function(e) {
+    $(".node").unbind().on("click", function(e) {
         ask_for_sound($(this).find("text").html(), true);
     });
 }

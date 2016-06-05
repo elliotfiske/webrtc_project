@@ -186,7 +186,7 @@
       }, 3000);
    }
 
-   function receive_message(data) {
+   function receive_message(data, connection_id) {
       console.log("Received message with data type " + data.type);
       switch (data.type) {
          case MESSAGE:
@@ -195,7 +195,7 @@
                // I am the leader, forward this message to everyone else*
                // *except for who sent the message!
                for (var ndx = 0; ndx < connected_friends.length; ndx++) {
-                  if (connected_friends[ndx].username != data.username) {
+                  if (connected_friends[ndx].their_id.peer != connection_id) {
                      connected_friends[ndx].their_id.send(data);
                   }
                }
@@ -356,18 +356,15 @@
       }
 
       //alert("Letting my new friend " + connection.peer + " know that my handle is: " + my_handle);
-      if (my_handle != "not set")
-      {
-         connection.send({
-            type: UPDATE_HANDLE,
-            peer_id: my_id,
-            username: my_handle
-         });
-      }
+      connection.send({
+         type: UPDATE_HANDLE,
+         peer_id: my_id,
+         username: my_handle
+      });
       // This sets up a function to be called whenever we receive data
       //  from this connection.
       connection.on('data', function(data) {
-         receive_message(data);
+         receive_message(data, connection.peer);
       });
 
       // Peer was somehow disconnected, try to re-establish connection if possible
@@ -430,7 +427,7 @@
             */
             receive_message({
                type: SELECT_NEW_LEADER
-            });
+            }, my_id);
          }
       }
    }
@@ -484,7 +481,7 @@
                type: MESSAGE,
                username: name,
                message: msg
-            });
+            }, my_id);
          }
          else {
             // I am not the leader, send my message to the leader to forward out
@@ -498,7 +495,7 @@
                type: MESSAGE,
                username: name,
                message: msg
-            });
+            }, my_id);
          }
 
          // Clear the message entry field after connection established
@@ -526,7 +523,7 @@
                type: UPDATE_HANDLE,
                peer_id: my_id,
                username: handle
-            });
+            }, my_id);
          }
          else {
             // tell the leader that I changed my handle
@@ -534,7 +531,7 @@
                type: UPDATE_HANDLE,
                peer_id: my_id,
                username: handle
-            });
+            }, my_id);
          }
       }
 

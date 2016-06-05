@@ -152,6 +152,7 @@ function update_click_handlers() {
     // });
     $(".node").unbind().on("click", function(e) {
         ask_for_sound($(this).find("text").html(), true);
+        console.log("Sending out a beer");
     });
 }
 

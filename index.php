@@ -132,6 +132,7 @@
             success: function(resp) {
                leader.peer_id = my_id;
                $("#leader-peer-id").html("The Leader is: <br /> <b>" + leader.peer_id + "</b>")
+               update_leader(leader.peer_id);
             }
          });
       }
@@ -141,6 +142,7 @@
          leader_told_me_to_connect(leader.peer_id, "Leader", function(success, result) {
             if (success) {
                leader.conn = result;
+               update_leader(leader.peer_id);
             }
             else {
                // Leader connection timed out
@@ -262,7 +264,8 @@
                console.log("Your in my connected friends at position: " + leader_ndx);
                if (leader_ndx >= 0) {
                   leader.conn = connected_friends[leader_ndx].their_id;
-                  $("#leader-peer-id").html("The Leader is: <br /> <b>" + leader.peer_id + "</b>")
+                  $("#leader-peer-id").html("The Leader is: <br /> <b>" + leader.peer_id + "</b>");
+                  update_leader(leader.peer_id);
                }
                else {
                   alert("ERROR! Leader not one of my friends?!");
@@ -390,11 +393,6 @@
       connection.on('close', function() {
          peer_disconnected(connection.peer);
       });
-
-      connection.on('error', function(err) {
-         window.alert("PEER JS ERROR :(")
-         window.alert(err.type);
-      })
    }
 
    function peer_disconnected(disconnected_id) {
@@ -614,10 +612,12 @@
          });
          // wait for leader ACKS?
          leader.peer_id = my_id;
-         $("#leader-peer-id").html("The Leader is: <br /> <b>" + leader.peer_id + "</b>")
+         $("#leader-peer-id").html("The Leader is: <br /> <b>" + leader.peer_id + "</b>");
+         update_leader(leader.peer_id);
       }
       else {
          leader.peer_id = next_leader;
+         update_leader(leader.peer_id);
       }
    }
 

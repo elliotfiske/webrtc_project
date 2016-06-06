@@ -82,7 +82,13 @@ function myGraph(el) {
 
         nodeEnter.append("image")
             .attr("class", "circle")
-            .attr("xlink:href", "https://github.com/favicon.ico")
+            .attr("xlink:href", function(d) {
+                if (d.id == leader.peer_id) {
+                    return "http://elliotfiske.com/webrtc_project/leader_face.png";
+                }
+                else {
+                    return "http://elliotfiske.com/webrtc_project/member_face.png";
+                }})
             .attr("x", "-16px")
             .attr("y", "-16px")
             .attr("width", "32px")
@@ -150,7 +156,7 @@ function update_click_handlers() {
     // .on("dblclick", function(e){
     //     e.preventDefault();  //cancel system double-click event
     // });
-    $(".node").unbind().on("click", function(e) {
+    $(".node").off().on("click", function(e) {
         ask_for_sound($(this).find("text").html(), true);
         console.log("Sending out a beer");
     });
@@ -158,4 +164,11 @@ function update_click_handlers() {
 
 function update_handle(other_id, new_handle) {
     $("#" + other_id + "-handle").html(new_handle);
+}
+
+function update_leader(leader_id) {
+    // Wipe old leader
+    $(".node").children("image").attr("href", "http://elliotfiske.com/webrtc_project/member_face.png");
+    $("#" + leader_id + "-handle").parent().children("image").attr("href", "http://elliotfiske.com/webrtc_project/leader_face.png");
+    console.warn("OH YES NEW LEADER " + leader_id);
 }

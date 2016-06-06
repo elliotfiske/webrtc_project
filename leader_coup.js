@@ -13,7 +13,8 @@ function make_myself_leader(dead_leader_id) {
                   data: {'newID':my_id},
                   success: function(resp) {
                      leader.peer_id = my_id;
-                     $("#leader-peer-id").html("The Leader is: <br /> <b>" + leader.peer_id + "</b> That's me!")
+                     $("#leader-peer-id").html("The Leader is: <br /> <b>" + leader.peer_id + "</b> That's me!");
+                     update_leader(leader.peer_id);
                   }
                });
          }
@@ -23,6 +24,8 @@ function make_myself_leader(dead_leader_id) {
             leader_told_me_to_connect(resp, function(success, result) {
                if (success) {
                   leader.conn = result;
+                  leader.peer_id = resp;
+                  update_leader(resp);
                }
                else {
                   // Leader connection timed out

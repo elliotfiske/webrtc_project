@@ -385,7 +385,6 @@
       });
 
       connection.on('error', function(err) {
-         alert("Error occurred!");
          console.log(err);
       });
 
